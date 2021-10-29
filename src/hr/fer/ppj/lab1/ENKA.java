@@ -21,7 +21,7 @@ public class ENKA implements Serializable {
     }
 
     public int newState(){
-        return (stateCount++) - 1;
+        return (++stateCount) - 1;
     }
 
     public void addTransition(int a, char c, int b) {
