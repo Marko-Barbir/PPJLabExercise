@@ -25,6 +25,8 @@ public class ENKA implements Serializable {
     }
 
     public void addTransition(int a, char c, int b) {
+        if (a >= stateCount ||
+                b >= stateCount) throw new IllegalArgumentException("Automata state doesn't exist");
         if(!transitions.containsKey(a)){
             transitions.put(a, new HashMap<>());
         }
@@ -35,6 +37,8 @@ public class ENKA implements Serializable {
     }
 
     public void addEpsilonTransition(int a, int b) {
+        if (a >= stateCount ||
+        b >= stateCount) throw new IllegalArgumentException("Automata state doesn't exist");
         if(!epsilonTransitions.containsKey(a)) {
             epsilonTransitions.put(a, new TreeSet<>());
         }
@@ -42,11 +46,13 @@ public class ENKA implements Serializable {
     }
 
     public void addAction (int a, Action action){
+        if (a >= stateCount) throw new IllegalArgumentException("Automata state doesn't exist");
         if(actionMap.containsKey(a)) throw new IllegalArgumentException("State already has associated action.");
         actionMap.put(a, action);
     }
 
     public Action getAction(int state) {
+        if (state >= stateCount) throw new IllegalArgumentException("Automata state doesn't exist");
         if (actionMap.containsKey(state)) {
             return actionMap.get(state);
         }
@@ -54,6 +60,7 @@ public class ENKA implements Serializable {
     }
 
     public TreeSet<Integer> getTransition(int a, char c){
+        if (a >= stateCount) throw new IllegalArgumentException("Automata state doesn't exist");
         if (transitions.containsKey(a) && transitions.get(a).containsKey(c)) {
             return transitions.get(a).get(c);
         }
@@ -61,6 +68,7 @@ public class ENKA implements Serializable {
     }
 
     public TreeSet<Integer> getEpsilonTransition(int a) {
+        if (a >= stateCount) throw new IllegalArgumentException("Automata state doesn't exist");
         if(epsilonTransitions.containsKey(a)) {
             return epsilonTransitions.get(a);
         }
