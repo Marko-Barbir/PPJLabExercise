@@ -2,18 +2,21 @@ package hr.fer.ppj.lab1;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.TreeSet;
 
 public class ENKA implements Serializable {
     public HashMap<Integer, HashMap<Character, TreeSet<Integer>>> transitions;
     public HashMap<Integer, TreeSet<Integer>> epsilonTransitions;
     public HashMap<Integer, Action> actionMap;
+    public HashSet<Integer> acceptableStates;
     int stateCount;
 
     public ENKA(){
         transitions = new HashMap<>();
         epsilonTransitions = new HashMap<>();
         actionMap = new HashMap<>();
+        acceptableStates = new HashSet<>();
         stateCount = 1;
     }
 
@@ -62,5 +65,13 @@ public class ENKA implements Serializable {
             return epsilonTransitions.get(a);
         }
         return new TreeSet<>();
+    }
+
+    public boolean addAcceptableState(int state) {
+        return acceptableStates.add(state);
+    }
+
+    public boolean isAcceptableState(int state) {
+        return acceptableStates.contains(state);
     }
 }
