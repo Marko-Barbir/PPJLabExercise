@@ -1,4 +1,4 @@
-package hr.fer.ppj.lab1;
+package hr.fer.ppj.lab1.maniacs414.analizator;
 
 import java.io.Serializable;
 
