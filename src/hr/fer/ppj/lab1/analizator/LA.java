@@ -1,22 +1,23 @@
 package hr.fer.ppj.lab1.analizator;
 
-import com.sun.source.util.Trees;
+import hr.fer.ppj.lab1.Action;
 import hr.fer.ppj.lab1.ENKA;
 
 import java.util.*;
 
 public class LA {
-    private String text;
+    private char[] text;
     private Map<Integer, ENKA> dummyENKA = newDummyENKA();
     private int start;
     private int end;
     private int last;
     private int regexIndex;
     private int state;
+    private int lineNumber;
 
     public LA(){
         Scanner inScanner = new Scanner(System.in).useDelimiter("\\Z");
-        text = inScanner.next();
+        text = inScanner.next().toCharArray();
         inScanner.close();
 
         this.start = 1;
@@ -24,10 +25,54 @@ public class LA {
         this.last = 1;
         this.regexIndex = 0;
         this.state = 0;
+        this.lineNumber = 1;
     }
 
     public void generateTokens(){
-        //TODO
+        TreeSet<Integer> R = epsilonClosure(0);
+        while(end < text.length){
+            TreeSet<Integer> P = new TreeSet<>(dummyENKA.get(this.state).acceptableStates);
+            P.retainAll(R);
+            if (P.isEmpty() && !R.isEmpty()){
+                Character a = text[end++];
+                TreeSet<Integer> Q = new TreeSet<>(R);
+                R = epsilonClosure(dummyENKA.get(this.state).getTransition(Q, a));
+            }
+            else if (!P.isEmpty()){
+                regexIndex = P.first();
+                last = end - 1;
+                Character a = text[end++];
+                TreeSet<Integer> Q = new TreeSet<>(R);
+                R = epsilonClosure(dummyENKA.get(this.state).getTransition(Q, a));
+            }
+            else if (R.isEmpty()){
+                if (regexIndex == 0){
+                    System.err.println(text[start]);
+                    start++;
+                    end = start;
+                    R = epsilonClosure(0);
+                }
+                else {
+                    Action action = dummyENKA.get(this.state).actionMap.get(regexIndex);
+                    if (action.goBack >= 0){
+                        last = start + action.goBack - 1;
+                    }
+                    if (!action.tokenName.equals("-")){
+                        System.out.println(action.tokenName + " " + lineNumber + " " + new String(text, start, last-start+1));
+                    }
+                    if (action.newLine){
+                        lineNumber++;
+                    }
+                    if(action.newState != null){
+                        this.state = action.newState;
+                    }
+
+                    regexIndex = 0;
+                    end = start = last + 1;
+                    R = epsilonClosure(0);
+                }
+            }
+        }
     }
 
     private TreeSet<Integer> epsilonClosure(Integer state){
@@ -39,7 +84,7 @@ public class LA {
         return useAllEpsilonTransitions(result, stack);
     }
 
-    private TreeSet<Integer> epsilonClosure(TreeSet<Integer> states){
+    private TreeSet<Integer> epsilonClosure(Set<Integer> states){
         TreeSet<Integer> result = new TreeSet<>();
         Stack<Integer> stack = new Stack<>();
         for (Integer state : states){
