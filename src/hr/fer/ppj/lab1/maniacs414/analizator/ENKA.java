@@ -3,6 +3,7 @@ package hr.fer.ppj.lab1.maniacs414.analizator;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeSet;
 
 public class ENKA implements Serializable {
@@ -65,6 +66,15 @@ public class ENKA implements Serializable {
             return transitions.get(a).get(c);
         }
         return new TreeSet<>();
+    }
+
+    public TreeSet<Integer> getTransition(Set<Integer> a, char c){
+        TreeSet<Integer> result = new TreeSet<>();
+        for (Integer i : a) {
+            TreeSet<Integer> nextStates = getTransition(i, c);
+            result.addAll(nextStates);
+        }
+        return result;
     }
 
     public TreeSet<Integer> getEpsilonTransition(int a) {
