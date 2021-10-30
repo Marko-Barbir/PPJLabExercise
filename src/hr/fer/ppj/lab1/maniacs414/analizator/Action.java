@@ -3,6 +3,7 @@ package hr.fer.ppj.lab1.maniacs414.analizator;
 import java.io.Serializable;
 
 public class Action implements Serializable {
+    private static final long serialVersionUID = 1L;
     public String tokenName;
     public boolean newLine;
     public Integer newState;

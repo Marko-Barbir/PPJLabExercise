@@ -54,6 +54,7 @@ public class GLA {
             automata.put(i, new ENKA());
         }
 
+
         while (scanner.hasNextLine() && (line = scanner.nextLine()).startsWith("<")) {
             int indexOfClose = line.indexOf('>');
             String stateName = line.substring(1, indexOfClose);

@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class ENKA implements Serializable {
+    private static final long serialVersionUID = 2L;
     public HashMap<Integer, HashMap<Character, TreeSet<Integer>>> transitions;
     public HashMap<Integer, TreeSet<Integer>> epsilonTransitions;
     public HashMap<Integer, Action> actionMap;
