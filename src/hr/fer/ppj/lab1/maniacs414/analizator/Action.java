@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Action implements Serializable {
     public String tokenName;
     public boolean newLine;
-    public String newState;
+    public Integer newState;
     public int goBack;
 
     public Action(String tokenName){
@@ -15,7 +15,7 @@ public class Action implements Serializable {
         this.goBack = -1;
     }
 
-    public Action(String tokenName, boolean newLine, String newState, int goBack) {
+    public Action(String tokenName, boolean newLine, Integer newState, int goBack) {
         this.tokenName = tokenName;
         this.newLine = newLine;
         this.newState = newState;

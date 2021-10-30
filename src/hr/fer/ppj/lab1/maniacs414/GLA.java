@@ -1,7 +1,14 @@
 package hr.fer.ppj.lab1.maniacs414;
 
+import hr.fer.ppj.lab1.maniacs414.analizator.Action;
 import hr.fer.ppj.lab1.maniacs414.analizator.ENKA;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,30 +23,71 @@ public class GLA {
             this.rightState = rightState;
         }
     }
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String line;
+    public static void main(String[] args) throws IOException {
+        Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
+        String line = null;
         HashMap<String, String> regexMap = new HashMap<>();
         while (scanner.hasNextLine() && (line=scanner.nextLine()).startsWith("{")) {
-            String[] split = line.split(" ", 1);
+            String[] split = line.split(" ", 2);
             String name = split[0], regex = split[1];
             for(String key: regexMap.keySet()) {
-                regex = regex.replaceAll(key, regexMap.get(key));
+                regex = regex.replace(key, regexMap.get(key));
             }
             regexMap.put(name, regex);
         }
-        ArrayList<String> states = new ArrayList<>();
-        while (scanner.hasNextLine() && (line=scanner.nextLine()).startsWith("%X")) {
-            String[] split = line.split(" ");
-            states.addAll(Arrays.asList(Arrays.copyOfRange(split, 1, split.length)));
+        String[] split = new String[0];
+        if (line != null) {
+            split = line.split(" ");
         }
-        ArrayList<String> tokenNames = new ArrayList<>();
-        while (scanner.hasNextLine() && (line=scanner.nextLine()).startsWith("%L")) {
-            String[] split = line.split(" ");
-            states.addAll(Arrays.asList(Arrays.copyOfRange(split, 1, split.length)));
+        ArrayList<String> states = new ArrayList<>(Arrays.asList(Arrays.copyOfRange(split, 1, split.length)));
+        if(scanner.hasNextLine()) {
+            line = scanner.nextLine();
+        }else {
+            line = null;
         }
-        ArrayList<ENKA> automata = new ArrayList<>();
-        states.forEach((state) -> automata.add(new ENKA()));
+        if (line != null) {
+            split = line.split(" ");
+        }
+        ArrayList<String> tokenNames = new ArrayList<>(Arrays.asList(Arrays.copyOfRange(split, 1, split.length)));
+        HashMap<Integer, ENKA> automata = new HashMap<>();
+        for (int i = 0; i < states.size(); i++) {
+            automata.put(i, new ENKA());
+        }
+
+        while (scanner.hasNextLine() && (line = scanner.nextLine()).startsWith("<")) {
+            int indexOfClose = line.indexOf('>');
+            String stateName = line.substring(1, indexOfClose);
+            String regex = line.substring(indexOfClose+1);
+            for(String key: regexMap.keySet()) {
+                regex = regex.replace(key, regexMap.get(key));
+            }
+            ENKA automaton = automata.get(states.indexOf(stateName));
+            StatePair result = convert(regex, automaton);
+            automaton.addEpsilonTransition(0, result.leftState);
+            automaton.addAcceptableState(result.rightState);
+
+            scanner.nextLine();
+            if(!(tokenNames.contains(line=scanner.nextLine()) || line.equals("-"))) {
+                throw new IllegalArgumentException("Invalid token name.");
+            }
+            Action action = new Action(line);
+            while (scanner.hasNextLine() && !(line = scanner.nextLine()).startsWith("}")) {
+                if (line.startsWith("NOVI_REDAK")){
+                    action.newLine = true;
+                } else if (line.startsWith("UDJI_U_STANJE")) {
+                    action.newState = states.indexOf(line.split(" ", 2)[1]);
+                } else if (line.startsWith("VRATI_SE")) {
+                    action.goBack = Integer.parseInt(line.split(" ", 2)[1]);
+                }
+            }
+            automaton.addAction(result.rightState, action);
+        }
+
+        FileOutputStream fOut = new FileOutputStream("src/hr/fer/ppj/lab1/maniacs414/analizator/enkamap.txt");
+        ObjectOutputStream oOut = new ObjectOutputStream(fOut);
+        oOut.writeObject(automata);
+        oOut.flush();
+        oOut.close();
     }
 
     public static boolean isOperator(String text, int i) {
@@ -51,7 +99,7 @@ public class GLA {
         return num % 2 == 0;
     }
 
-    private StatePair convert(String expression, ENKA automaton) {
+    private static StatePair convert(String expression, ENKA automaton) {
         ArrayList<String> options = new ArrayList<>();
         int parenCount = 0;
         int lastUngrouped = 0;
