@@ -164,7 +164,7 @@ public class GLA {
                             automaton.addTransition(a, expression.charAt(i), b);
                         }
                     } else {
-                        int j = i;
+                        int j = i+1;
                         parenCount=0;
                         while (j < expression.length()) {
                             if(expression.charAt(j) == ')') {
