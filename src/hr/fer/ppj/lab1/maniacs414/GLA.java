@@ -164,7 +164,20 @@ public class GLA {
                             automaton.addTransition(a, expression.charAt(i), b);
                         }
                     } else {
-                        int j = expression.substring(i).indexOf(')');
+                        int j = i;
+                        parenCount=0;
+                        while (j < expression.length()) {
+                            if(expression.charAt(j) == ')') {
+                                if(parenCount==0) {
+                                    break;
+                                } else {
+                                    parenCount--;
+                                }
+                            } else if(expression.charAt(j) == '(') {
+                                parenCount++;
+                            }
+                            j++;
+                        }
                         StatePair temp = convert(expression.substring(i+1, j), automaton);
                         a = temp.leftState;
                         b = temp.rightState;
