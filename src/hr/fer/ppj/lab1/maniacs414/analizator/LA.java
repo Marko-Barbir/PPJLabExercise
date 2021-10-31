@@ -51,6 +51,9 @@ public class LA {
                 R = epsilonClosure(enkaMap.get(this.state).getTransition(Q, a));
                 P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
                 P.retainAll(R);
+                if (end == text.length && P.isEmpty() && !R.isEmpty()) {
+                    R = new TreeSet<>();
+                }
             }
             if (!P.isEmpty()){
                 regexIndex = P.first();
@@ -64,6 +67,11 @@ public class LA {
                     R = epsilonClosure(enkaMap.get(this.state).getTransition(Q, a));
                     P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
                     P.retainAll(R);
+                    if (end == text.length){
+                        regexIndex = P.first();
+                        last++;
+                        R = new TreeSet<>();
+                    }
                 }
             }
             if (R.isEmpty()){
