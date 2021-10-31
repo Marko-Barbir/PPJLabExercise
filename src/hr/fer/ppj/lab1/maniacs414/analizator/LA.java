@@ -1,11 +1,6 @@
 package hr.fer.ppj.lab1.maniacs414.analizator;
 
-
-import hr.fer.ppj.lab1.maniacs414.analizator.Action;
-import hr.fer.ppj.lab1.maniacs414.analizator.ENKA;
-
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
@@ -37,9 +32,9 @@ public class LA {
             System.exit(1);
         }
 
-        this.start = 1;
+        this.start = 0;
         this.end = 0;
-        this.last = 1;
+        this.last = 0;
         this.regexIndex = 0;
         this.state = 0;
         this.lineNumber = 1;
@@ -47,27 +42,38 @@ public class LA {
 
     public void generateTokens(){
         TreeSet<Integer> R = epsilonClosure(0);
+        TreeSet<Integer> P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
+        P.retainAll(R);
         while(end < text.length){
-            TreeSet<Integer> P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
-            P.retainAll(R);
             if (P.isEmpty() && !R.isEmpty()){
                 char a = text[end++];
                 TreeSet<Integer> Q = new TreeSet<>(R);
                 R = epsilonClosure(enkaMap.get(this.state).getTransition(Q, a));
+                P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
+                P.retainAll(R);
             }
-            else if (!P.isEmpty()){
+            if (!P.isEmpty()){
                 regexIndex = P.first();
                 last = end - 1;
-                char a = text[end++];
-                TreeSet<Integer> Q = new TreeSet<>(R);
-                R = epsilonClosure(enkaMap.get(this.state).getTransition(Q, a));
+                if (end == text.length){
+                    R = new TreeSet<>();
+                }
+                else {
+                    char a = text[end++];
+                    TreeSet<Integer> Q = new TreeSet<>(R);
+                    R = epsilonClosure(enkaMap.get(this.state).getTransition(Q, a));
+                    P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
+                    P.retainAll(R);
+                }
             }
-            else if (R.isEmpty()){
+            if (R.isEmpty()){
                 if (regexIndex == 0){
                     System.err.println(text[start]);
                     start++;
                     end = start;
                     R = epsilonClosure(0);
+                    P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
+                    P.retainAll(R);
                 }
                 else {
                     Action action = enkaMap.get(this.state).actionMap.get(regexIndex);
@@ -87,6 +93,8 @@ public class LA {
                     regexIndex = 0;
                     end = start = last + 1;
                     R = epsilonClosure(0);
+                    P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
+                    P.retainAll(R);
                 }
             }
         }
