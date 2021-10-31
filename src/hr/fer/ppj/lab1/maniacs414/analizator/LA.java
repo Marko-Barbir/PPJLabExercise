@@ -40,72 +40,71 @@ public class LA {
         this.lineNumber = 1;
     }
 
-    public void generateTokens(){
+   public void generateTokens(){
+        String token = generateToken();
+        while (!token.equals("EOF")){
+            if(token.equals("")) {
+                token = generateToken();
+                continue;
+            }
+
+            System.out.println(token);
+            token = generateToken();
+        }
+   }
+
+    private String generateToken(){
+        if (end >= text.length){
+            return "EOF";
+        }
+        String token = "";
         TreeSet<Integer> R = epsilonClosure(0);
         TreeSet<Integer> P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
         P.retainAll(R);
-        while(end < text.length){
-            if (P.isEmpty() && !R.isEmpty()){
-                char a = text[end++];
-                TreeSet<Integer> Q = new TreeSet<>(R);
-                R = epsilonClosure(enkaMap.get(this.state).getTransition(Q, a));
-                P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
-                P.retainAll(R);
-                if (end == text.length && P.isEmpty() && !R.isEmpty()) {
-                    R = new TreeSet<>();
-                }
-            }
-            if (!P.isEmpty()){
+        while(!R.isEmpty() && end < text.length){
+            char a;
+            if (!P.isEmpty()) {
                 regexIndex = P.first();
                 last = end - 1;
-                if (end == text.length){
-                    R = new TreeSet<>();
-                }
-                else {
-                    char a = text[end++];
-                    TreeSet<Integer> Q = new TreeSet<>(R);
-                    R = epsilonClosure(enkaMap.get(this.state).getTransition(Q, a));
-                    P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
-                    P.retainAll(R);
-                    if (end == text.length){
-                        regexIndex = P.first();
-                        last++;
-                        R = new TreeSet<>();
-                    }
-                }
             }
-            if (R.isEmpty()){
-                if (regexIndex == 0){
-                    System.err.println(text[start]);
-                    start++;
-                    end = start;
-                    R = epsilonClosure(0);
-                    P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
-                    P.retainAll(R);
-                }
-                else {
-                    Action action = enkaMap.get(this.state).actionMap.get(regexIndex);
-                    if (action.goBack >= 0){
-                        last = start + action.goBack - 1;
-                    }
-                    if (!action.tokenName.equals("-")){
-                        System.out.println(action.tokenName + " " + lineNumber + " " + new String(text, start, last-start+1));
-                    }
-                    if (action.newLine){
-                        lineNumber++;
-                    }
-                    if(action.newState != null){
-                        this.state = action.newState;
-                    }
+            a = text[end++];
+            TreeSet<Integer> Q = new TreeSet<>(R);
+            R = epsilonClosure(enkaMap.get(this.state).getTransition(Q, a));
+            P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
+            P.retainAll(R);
 
-                    regexIndex = 0;
-                    end = start = last + 1;
-                    R = epsilonClosure(0);
-                    P = new TreeSet<>(enkaMap.get(this.state).acceptableStates);
-                    P.retainAll(R);
-                }
+            if (end == text.length && !P.isEmpty()){
+                regexIndex = P.first();
+                last++;
             }
         }
+
+        if (regexIndex == 0){
+            System.err.println(text[start]);
+            start++;
+            end = start;
+        }
+        else {
+            Action action = enkaMap.get(this.state).actionMap.get(regexIndex);
+            if (action.goBack >= 0){
+                last = start + action.goBack - 1;
+            }
+            if (!action.tokenName.equals("-")){
+                token = action.tokenName + " " + lineNumber + " " + new String(text, start, last-start+1);
+            }
+            if (action.newLine){
+                lineNumber++;
+            }
+            if(action.newState != null){
+                this.state = action.newState;
+            }
+
+            regexIndex = 0;
+            end = start = last + 1;
+        }
+
+
+        return token;
     }
 
     private TreeSet<Integer> epsilonClosure(Integer state){
