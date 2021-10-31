@@ -31,7 +31,7 @@ public class GLA {
             String[] split = line.split(" ", 2);
             String name = split[0], regex = split[1];
             for(String key: regexMap.keySet()) {
-                regex = regex.replace(key, regexMap.get(key));
+                regex = regex.replace(key, "(" + regexMap.get(key) + ")");
             }
             regexMap.put(name, regex);
         }
@@ -60,7 +60,7 @@ public class GLA {
             String stateName = line.substring(1, indexOfClose);
             String regex = line.substring(indexOfClose+1);
             for(String key: regexMap.keySet()) {
-                regex = regex.replace(key, regexMap.get(key));
+                regex = regex.replace(key, "(" + regexMap.get(key) + ")");
             }
             ENKA automaton = automata.get(states.indexOf(stateName));
             StatePair result = convert(regex, automaton);
