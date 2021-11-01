@@ -75,7 +75,7 @@ public class LA {
 
             if (end == text.length && !P.isEmpty()){
                 regexIndex = P.first();
-                last++;
+                last = end - 1;
             }
         }
 
