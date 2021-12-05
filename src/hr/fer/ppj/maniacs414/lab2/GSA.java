@@ -219,25 +219,18 @@ public class GSA {
         for(int i = 0; i< dka.getStateCount();i++) {
             action.put(i, new HashMap<>());
             newState.put(i, new HashMap<>());
-            for (String symbol : Stream.concat(terminal.stream(), Stream.of("|")).collect(Collectors.toSet())) {
-                action.get(i).put(symbol, "o");
-            }
-            for (String symbol : nonterminal){
-                newState.get(i).put(symbol, -1);
-            }
         }
 
         for (int state = 0; state<dka.getStateCount(); state++) {
             TreeSet<String> LRItems = dka.getStateLRItems(state);
-            if(LRItems.stream().anyMatch(GSA::isComplete)) {
+            if(LRItems.stream().anyMatch(x -> !x.equals("q0") && isComplete(x))) {
                 for (var entry : grammar.entrySet()) {
                     left = entry.getKey();
                     for (var production : entry.getValue()) {
-                        List<String> right = production;
-                        for(var complete : LRItems.stream().filter(GSA::isComplete).collect(Collectors.toList())) {
-                            if(productionMatchesLRItem(left, right, complete)) {
+                        for(var complete : LRItems.stream().filter(x -> !x.equals("q0") && isComplete(x)).collect(Collectors.toList())) {
+                            if(productionMatchesLRItem(left, production, complete)) {
                                 for (var input : getStateContext(complete)) {
-                                    action.get(state).computeIfAbsent(input, (x) -> "r " + right.size());
+                                    action.get(state).computeIfAbsent(input, (x) -> "r " + production.size());
                                 }
                             }
                         }
@@ -245,6 +238,19 @@ public class GSA {
                 }
             }
         }
+
+        System.out.println(action);
+
+        for (int i = 0; i<dka.getStateCount(); i++) {
+            for (String symbol : Stream.concat(terminal.stream(), Stream.of("|")).collect(Collectors.toSet())) {
+                action.get(i).putIfAbsent(symbol, "o");
+            }
+            for (String symbol : nonterminal){
+                newState.get(i).putIfAbsent(symbol, -1);
+            }
+        }
+
+
     }
 
     public static TreeSet<String> getStateContext(String state) {
