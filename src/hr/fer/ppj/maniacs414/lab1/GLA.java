@@ -1,14 +1,12 @@
-package hr.fer.ppj.lab1.maniacs414;
+package hr.fer.ppj.maniacs414.lab1;
 
-import hr.fer.ppj.lab1.maniacs414.analizator.Action;
-import hr.fer.ppj.lab1.maniacs414.analizator.ENKA;
+import hr.fer.ppj.maniacs414.lab1.analizator.Action;
+import hr.fer.ppj.maniacs414.lab1.analizator.ENKA;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
