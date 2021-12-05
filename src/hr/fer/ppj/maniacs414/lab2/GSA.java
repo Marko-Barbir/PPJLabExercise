@@ -3,6 +3,9 @@ package hr.fer.ppj.maniacs414.lab2;
 import hr.fer.ppj.maniacs414.lab2.analizator.DKA;
 import hr.fer.ppj.maniacs414.lab2.analizator.ENKA;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -249,8 +252,9 @@ public class GSA {
                 }
             }
             String finalStartState = startState;
+            String string = "S' ->  " + finalStartState + " .  {|}";
             int finishState = dka.getStateToLRItemMap().entrySet().stream()
-                    .filter(entry -> entry.getValue().contains("S' -> " + finalStartState + " .{|}")).mapToInt(Map.Entry::getKey)
+                    .filter(entry -> entry.getValue().contains(string)).mapToInt(Map.Entry::getKey)
                     .findFirst().orElse(0);
             action.get(finishState).put("|", "pri");
         }
@@ -261,6 +265,33 @@ public class GSA {
             for (String symbol : nonterminal){
                 newState.get(i).putIfAbsent(symbol, -1);
             }
+        }
+
+        try {
+            FileOutputStream fileOut1 =
+                    new FileOutputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/newState.txt");
+            ObjectOutputStream out1 = new ObjectOutputStream(fileOut1);
+            out1.writeObject(newState);
+
+            FileOutputStream fileOut2 =
+                    new FileOutputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/action.txt");
+            ObjectOutputStream out2 = new ObjectOutputStream(fileOut2);
+            out2.writeObject(action);
+
+            FileOutputStream fileOut3 =
+                    new FileOutputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/syncCharacters.txt");
+            ObjectOutputStream out3 = new ObjectOutputStream(fileOut3);
+            out3.writeObject(sync);
+
+
+            out1.close();
+            out2.close();
+            out3.close();
+            fileOut1.close();
+            fileOut2.close();
+            fileOut3.close();
+        } catch (IOException i) {
+            i.printStackTrace();
         }
 
         System.out.println(action);
