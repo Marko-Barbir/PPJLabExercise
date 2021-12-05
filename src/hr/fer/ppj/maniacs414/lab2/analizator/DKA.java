@@ -65,4 +65,8 @@ public class DKA implements Serializable {
     public TreeSet<String> getStateLRItems(Integer state) {
         return new TreeSet<>(stateToLRItemMap.getOrDefault(state, new TreeSet<>()));
     }
+
+    public HashMap<Integer, HashMap<String, Integer>> getTransitions() {
+        return new HashMap<>(transitions);
+    }
 }

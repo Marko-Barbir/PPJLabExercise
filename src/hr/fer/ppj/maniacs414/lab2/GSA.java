@@ -6,6 +6,7 @@ import hr.fer.ppj.maniacs414.lab2.analizator.ENKA;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class GSA {
@@ -230,17 +231,29 @@ public class GSA {
                         for(var complete : LRItems.stream().filter(x -> !x.equals("q0") && isComplete(x)).collect(Collectors.toList())) {
                             if(productionMatchesLRItem(left, production, complete)) {
                                 for (var input : getStateContext(complete)) {
-                                    action.get(state).computeIfAbsent(input, (x) -> "r " + production.size());
+                                    String finalLeft = left;
+                                    action.get(state).computeIfAbsent(input, (x) -> "r " + finalLeft + " " + production.size());
                                 }
                             }
                         }
                     }
                 }
             }
+            for (var entry : dka.getTransitions().entrySet()) {
+                for(var transition : entry.getValue().entrySet()) {
+                    if(nonterminal.contains(transition.getKey())) {
+                        newState.get(entry.getKey()).put(transition.getKey(), transition.getValue());
+                    } else if (terminal.contains(transition.getKey())) {
+                        action.get(entry.getKey()).put(transition.getKey(), "p " + transition.getValue());
+                    }
+                }
+            }
+            String finalStartState = startState;
+            int finishState = dka.getStateToLRItemMap().entrySet().stream()
+                    .filter(entry -> entry.getValue().contains("S' -> " + finalStartState + " .{|}")).mapToInt(Map.Entry::getKey)
+                    .findFirst().orElse(0);
+            action.get(finishState).put("|", "pri");
         }
-
-        System.out.println(action);
-
         for (int i = 0; i<dka.getStateCount(); i++) {
             for (String symbol : Stream.concat(terminal.stream(), Stream.of("|")).collect(Collectors.toSet())) {
                 action.get(i).putIfAbsent(symbol, "o");
@@ -250,7 +263,9 @@ public class GSA {
             }
         }
 
-
+        System.out.println(action);
+        System.out.println(newState);
+        System.out.println();
     }
 
     public static TreeSet<String> getStateContext(String state) {
