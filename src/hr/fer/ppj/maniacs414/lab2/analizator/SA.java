@@ -1,5 +1,10 @@
 package hr.fer.ppj.maniacs414.lab2.analizator;
 
+import hr.fer.ppj.maniacs414.lab1.analizator.ENKA;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,6 +23,33 @@ public class SA {
         this.index = 0;
         this.mainStack = new Stack<>();
         this.nodeStack = new Stack<>();
+
+        try {
+            FileInputStream fileInputStream1
+                    = new FileInputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/newState.txt");
+            ObjectInputStream objectInputStream1
+                    = new ObjectInputStream(fileInputStream1);
+            this.newStateTable = (Map<Integer, Map<String, Integer>>) objectInputStream1.readObject();
+
+            FileInputStream fileInputStream2
+                    = new FileInputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/action.txt");
+            ObjectInputStream objectInputStream2
+                    = new ObjectInputStream(fileInputStream2);
+            this.actionTable = (Map<Integer, Map<String, String>>) objectInputStream2.readObject();
+
+            FileInputStream fileInputStream3
+                    = new FileInputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/syncCharacters.txt");
+            ObjectInputStream objectInputStream3
+                    = new ObjectInputStream(fileInputStream3);
+            this.syncCharacters = (Set<String>) objectInputStream3.readObject();
+
+            objectInputStream1.close();
+            objectInputStream2.close();
+            objectInputStream3.close();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
         Scanner inScanner = new Scanner(System.in);
         while (inScanner.hasNextLine()) {
