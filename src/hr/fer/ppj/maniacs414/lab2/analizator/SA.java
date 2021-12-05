@@ -13,6 +13,7 @@ public class SA {
     private int index;
     private Stack<Object> mainStack;
     private Stack<Node> nodeStack;
+    private Node root;
 
     private Map<Integer, Map<String, Integer>> newStateTable;
     private Map<Integer, Map<String, String>> actionTable;
@@ -26,19 +27,19 @@ public class SA {
 
         try {
             FileInputStream fileInputStream1
-                    = new FileInputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/newState.txt");
+                    = new FileInputStream("src/hr/fer/ppj/maniacs414/lab2/analizator/newState.txt");
             ObjectInputStream objectInputStream1
                     = new ObjectInputStream(fileInputStream1);
             this.newStateTable = (Map<Integer, Map<String, Integer>>) objectInputStream1.readObject();
 
             FileInputStream fileInputStream2
-                    = new FileInputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/action.txt");
+                    = new FileInputStream("src/hr/fer/ppj/maniacs414/lab2/analizator/action.txt");
             ObjectInputStream objectInputStream2
                     = new ObjectInputStream(fileInputStream2);
             this.actionTable = (Map<Integer, Map<String, String>>) objectInputStream2.readObject();
 
             FileInputStream fileInputStream3
-                    = new FileInputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/syncCharacters.txt");
+                    = new FileInputStream("src/hr/fer/ppj/maniacs414/lab2/analizator/syncCharacters.txt");
             ObjectInputStream objectInputStream3
                     = new ObjectInputStream(fileInputStream3);
             this.syncCharacters = (Set<String>) objectInputStream3.readObject();
@@ -64,22 +65,28 @@ public class SA {
         inputTokens.add(new Token("|", -1, ""));
 
         parseInput();
-        printTree(nodeStack.pop(), 0);
+        root = nodeStack.pop();
+    }
+
+    public Node getRoot() {
+        return root;
     }
 
     private void parseInput() {
         mainStack.push(0);
         while (index < inputTokens.size()) {
-            if(!(mainStack.peek() instanceof Integer currentState)) {
+            if(!(mainStack.peek() instanceof Integer)) {
                 throw new IllegalStateException("Expected integer on top of the main stack, found: " + mainStack.peek());
             }
+            Integer currentState = (Integer) mainStack.peek();
+
             String action = actionTable.get(currentState).get(inputTokens.get(index).getType());
             if (action == null) {
                 throw new IllegalStateException("No ActionTable entry for the given input");
             }
 
             if (action.equals("pri")){
-                System.out.println("Expression parsed successfully.");
+                //System.out.println("Expression parsed successfully.");
                 break;
             }
             else if (action.startsWith("p")){
@@ -101,26 +108,34 @@ public class SA {
     }
 
     private void performRecovery(Integer currentState) {
+        if (index >= inputTokens.size()) {
+            return;
+        }
         Set<String> expectedCharacters = actionTable.get(currentState).keySet().stream()
                 .filter(k -> !actionTable.get(currentState).get(k).startsWith("o")).collect(Collectors.toSet());
         Token token = inputTokens.get(index);
 
-        System.out.printf("Syntax error: line %d, expected %s, received %s %s\n",
-                token.getLineNumber(), String.join(" ", expectedCharacters), token.getType(), token.getContent());
+        if(!token.getType().equals("|")) {
+            System.err.printf("Syntax error: line %d, expected %s, received %s %s\n",
+                    token.getLineNumber(), String.join(" ", expectedCharacters), token.getType(), token.getContent());
+        }
 
         while (index < inputTokens.size() && !syncCharacters.contains(inputTokens.get(index).getType())) {
             index++;
         }
 
-        Integer state = currentState;
-        while (!mainStack.isEmpty() && actionTable.get(state).get(inputTokens.get(index).getType()).startsWith("o")) {
-            if (mainStack.peek() instanceof Integer) {
+        if (index < inputTokens.size()) {
+            Integer state = currentState;
+            while (!mainStack.isEmpty() && actionTable.get(state).get(inputTokens.get(index).getType()).startsWith("o")) {
+                if (mainStack.peek() instanceof Integer) {
+                    mainStack.pop();
+                }
                 mainStack.pop();
+                nodeStack.pop();
+                state = (Integer) mainStack.peek();
             }
-            mainStack.pop();
-            nodeStack.pop();
-            state = (Integer) mainStack.peek();
         }
+
     }
 
     private void performMove(String action) {
@@ -172,6 +187,8 @@ public class SA {
 
     public static void main(String[] args) {
         SA sa = new SA();
+        sa.printTree(sa.getRoot(), 0);
+        System.out.println();
     }
 
 }

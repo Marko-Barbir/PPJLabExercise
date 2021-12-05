@@ -269,17 +269,17 @@ public class GSA {
 
         try {
             FileOutputStream fileOut1 =
-                    new FileOutputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/newState.txt");
+                    new FileOutputStream("src/hr/fer/ppj/maniacs414/lab2/analizator/newState.txt");
             ObjectOutputStream out1 = new ObjectOutputStream(fileOut1);
             out1.writeObject(newState);
 
             FileOutputStream fileOut2 =
-                    new FileOutputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/action.txt");
+                    new FileOutputStream("src/hr/fer/ppj/maniacs414/lab2/analizator/action.txt");
             ObjectOutputStream out2 = new ObjectOutputStream(fileOut2);
             out2.writeObject(action);
 
             FileOutputStream fileOut3 =
-                    new FileOutputStream("src/hr/fer/ppj/lab2/maniacs414/analizator/syncCharacters.txt");
+                    new FileOutputStream("src/hr/fer/ppj/maniacs414/lab2/analizator/syncCharacters.txt");
             ObjectOutputStream out3 = new ObjectOutputStream(fileOut3);
             out3.writeObject(sync);
 

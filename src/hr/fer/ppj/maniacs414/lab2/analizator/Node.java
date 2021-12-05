@@ -21,6 +21,6 @@ public class Node {
     }
 
     public void addChild(Node child) {
-        this.children.add(child);
+        this.children.add(0, child);
     }
 }
