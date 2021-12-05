@@ -2,7 +2,6 @@ package hr.fer.ppj.maniacs414.lab2.analizator;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ENKA implements Serializable {
     private static final long serialVersionUID = 2L;
@@ -16,7 +15,7 @@ public class ENKA implements Serializable {
         epsilonTransitions = new HashMap<>();
         acceptableStates = new HashSet<>();
         states = new HashSet<>();
-        stateCount = 1;
+        stateCount = 0;
     }
 
     public int getStateCount() {
