@@ -8,4 +8,7 @@ public interface Type {
         return false;
     }
     String getTypeName();
+    default boolean isDefined() {
+        return false;
+    }
 }

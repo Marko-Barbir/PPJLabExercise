@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class FunctionType implements Type {
+    public boolean isDefined;
     public Type returnType;
     public List<Type> paramTypes;
 
     public FunctionType(Type returnType, Type... paramTypes) {
         this.returnType = returnType;
         this.paramTypes = List.of(paramTypes);
+        isDefined = false;
     }
 
     @Override
@@ -25,5 +27,17 @@ public class FunctionType implements Type {
     @Override
     public String toString() {
         return getTypeName();
+    }
+
+    @Override
+    public boolean isDefined() {
+        return isDefined;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof FunctionType other)) return false;
+        return this.returnType == other.returnType &&
+                this.paramTypes == other.paramTypes;
     }
 }

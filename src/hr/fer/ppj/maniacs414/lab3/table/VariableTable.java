@@ -13,7 +13,7 @@ public class VariableTable {
         this.variables = new HashMap<>();
     }
 
-    public boolean isAlreadyDefined(String name) {
+    public boolean isAlreadyDeclared(String name) {
         return variables.containsKey(name);
     }
 
