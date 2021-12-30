@@ -1,6 +1,11 @@
 package hr.fer.ppj.maniacs414.lab3.types;
 
 public interface Type {
-    boolean implicitCastsInto(Type other);
-    boolean explicitCastsInto(Type other);
+    default boolean implicitCastsInto(Type other){
+        return false;
+    }
+    default boolean explicitCastsInto(Type other) {
+        return false;
+    }
+    String getTypeName();
 }
