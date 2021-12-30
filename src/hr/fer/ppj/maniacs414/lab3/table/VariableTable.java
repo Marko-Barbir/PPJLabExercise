@@ -2,15 +2,15 @@ package hr.fer.ppj.maniacs414.lab3.table;
 
 import hr.fer.ppj.maniacs414.lab3.types.Type;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 
 public class VariableTable {
-    Hashtable<String, Type> variables;
+    HashMap<String, Type> variables;
     VariableTable parentTable;
 
     public VariableTable(VariableTable parentTable) {
         this.parentTable = parentTable;
-        variables = new Hashtable<>();
+        this.variables = new HashMap<>();
     }
 
     public boolean isAlreadyDefined(String name) {
