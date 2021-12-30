@@ -1,6 +1,5 @@
 package hr.fer.ppj.maniacs414.lab2.analizator;
 
-import hr.fer.ppj.maniacs414.lab1.analizator.ENKA;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -65,6 +64,14 @@ public class SA {
         inputTokens.add(new Token("|", -1, ""));
 
         parseInput();
+//        if(nodeStack.size() != 1) {
+//            root = new Node("JA SAM ROOT");
+//            while(!nodeStack.isEmpty()){
+//                root.addChild(nodeStack.pop());
+//            }
+//        } else {
+//            root = nodeStack.pop();
+//        }
         root = nodeStack.pop();
     }
 
@@ -73,6 +80,7 @@ public class SA {
     }
 
     private void parseInput() {
+        mainStack.push("S'");
         mainStack.push(0);
         while (index < inputTokens.size()) {
             if(!(mainStack.peek() instanceof Integer)) {
@@ -95,11 +103,21 @@ public class SA {
             else if (action.startsWith("r")){
                 boolean success = performReduction(action);
                 if (!success) {
-                    performRecovery(currentState);
+//                    System.out.println("GRESKA KOD NOVOG STANJA");
+                    if(!inputTokens.get(index).getType().equals("|")) {
+                        performRecovery(currentState);
+                    } else {
+                        return;
+                    }
                 }
             }
             else if (action.startsWith("o")){
-                performRecovery(currentState);
+//                System.out.println("GRESKA KOD AKCIJE");
+                if(!inputTokens.get(index).getType().equals("|")) {
+                    performRecovery(currentState);
+                } else {
+                    return;
+                }
             }
             else {
                 throw new IllegalStateException("Invalid action notation");
@@ -108,6 +126,7 @@ public class SA {
     }
 
     private void performRecovery(Integer currentState) {
+        System.out.println("sad smo na " + inputTokens.get(index));
         if (index >= inputTokens.size()) {
             return;
         }
@@ -124,17 +143,20 @@ public class SA {
             index++;
         }
 
-        if (index < inputTokens.size()) {
-            Integer state = currentState;
-            while (!mainStack.isEmpty() && actionTable.get(state).get(inputTokens.get(index).getType()).startsWith("o")) {
-                if (mainStack.peek() instanceof Integer) {
-                    mainStack.pop();
-                }
+        if (index == inputTokens.size()) return;
+        Integer state = currentState;
+        while (!mainStack.isEmpty() && actionTable.get(state).get(inputTokens.get(index).getType()).startsWith("o")) {
+            if (mainStack.peek() instanceof Integer) {
                 mainStack.pop();
-                nodeStack.pop();
-                state = (Integer) mainStack.peek();
             }
+            mainStack.pop();
+            if(nodeStack.size() > 1) {
+                nodeStack.pop();
+            }
+
+            state = (Integer) mainStack.peek();
         }
+
 
     }
 
@@ -188,7 +210,6 @@ public class SA {
     public static void main(String[] args) {
         SA sa = new SA();
         sa.printTree(sa.getRoot(), 0);
-        System.out.println();
     }
 
 }
