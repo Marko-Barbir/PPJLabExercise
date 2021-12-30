@@ -1,5 +1,8 @@
 package hr.fer.ppj.maniacs414.lab3.parser;
 
+import hr.fer.ppj.maniacs414.lab3.types.CharType;
+import hr.fer.ppj.maniacs414.lab3.types.IntType;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +45,15 @@ public class Parser {
         Matcher nonterminalMatcher = nonterminalPattern.matcher(text);
 
         if(terminalMatcher.matches()){
-            return new TerminalNode(terminalMatcher.group(1), Integer.parseInt(terminalMatcher.group(2)), terminalMatcher.group(3));
+            TerminalNode terminalNode = new TerminalNode(terminalMatcher.group(1), Integer.parseInt(terminalMatcher.group(2)), terminalMatcher.group(3));
+            try {
+                Integer.parseInt(terminalNode.value);
+                terminalNode.addProp("tip", new IntType(true));
+            } catch (NumberFormatException e) {
+                terminalNode.addProp("tip", new CharType(true));
+            }
+
+            return terminalNode;
         }
 
         if(nonterminalMatcher.matches()){

@@ -1,5 +1,7 @@
 package hr.fer.ppj.maniacs414.lab3.parser;
 
+import hr.fer.ppj.maniacs414.lab3.rules.Rules;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,16 +23,8 @@ public class NonterminalNode extends Node{
         this(null, name);
     }
 
-    public Object addProp(String name, Object prop){
-       return props.put(name, prop);
-    }
-
     public boolean addChild(Node child){
         return children.add(child);
-    }
-
-    public boolean check(){
-        return false;
     }
 
     public static void printTree(Node root, int level){
