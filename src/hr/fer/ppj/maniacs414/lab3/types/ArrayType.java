@@ -21,4 +21,10 @@ public class ArrayType implements Type {
     public String getTypeName() {
         return "niz("+elementType.getTypeName()+")";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof ArrayType other)) return false;
+        return elementType.equals(other.elementType);
+    }
 }
