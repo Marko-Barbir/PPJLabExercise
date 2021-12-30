@@ -1,5 +1,7 @@
 package hr.fer.ppj.maniacs414.lab3.parser;
 
+import java.util.HashMap;
+
 public class TerminalNode extends Node {
     public String token;
     public int line;
@@ -10,6 +12,7 @@ public class TerminalNode extends Node {
         this.token = token;
         this.line = line;
         this.value = value;
+        this.props = new HashMap<>();
     }
 
     public TerminalNode(String token, int line, String value) {

@@ -9,7 +9,6 @@ import java.util.Map;
 public class NonterminalNode extends Node{
     public String name;
     public List<Node> children;
-    public Map<String, Object> props;
 
     public NonterminalNode(Node parent, String name) {
         this.parent = parent;
