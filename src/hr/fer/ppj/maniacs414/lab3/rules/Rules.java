@@ -758,7 +758,9 @@ public class Rules {
         NonterminalNode cast_izraz = (NonterminalNode) node.children.get(3);
         check(ime_tipa, variableTable, functionTable);
         check(cast_izraz, variableTable, functionTable);
-        ((Type) cast_izraz.props.get("tip")).explicitCastsInto((Type) ime_tipa.props.get("tip"));
+        if(!((Type) cast_izraz.props.get("tip")).explicitCastsInto((Type) ime_tipa.props.get("tip"))) {
+            error(node);
+        }
         node.addProp("tip", ime_tipa.props.get("tip"));
         node.addProp("l-izraz", false);
     }
