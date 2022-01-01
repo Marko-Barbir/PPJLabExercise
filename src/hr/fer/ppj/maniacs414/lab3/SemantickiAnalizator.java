@@ -29,7 +29,7 @@ public class SemantickiAnalizator {
         markDefinedFunctions(functionTable, allFunctions);
         for(Map<FunctionType, Boolean> map : allFunctions.values()){
             if(map.values().contains(false)){
-                System.out.println("function");
+                System.out.println("funkcija");
                 return;
             }
         }
