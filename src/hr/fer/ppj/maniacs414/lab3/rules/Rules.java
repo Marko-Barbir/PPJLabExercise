@@ -1030,6 +1030,8 @@ public class Rules {
         while (variableTable.parentTable != null) {
             if(variableTable.variables.containsKey(idn)) return variableTable.variables.get(idn);
             if(functionTable.functions.containsKey(idn)) return functionTable.functions.get(idn);
+            variableTable = variableTable.parentTable;
+            functionTable = functionTable.parentTable;
         }
         return res;
     }
