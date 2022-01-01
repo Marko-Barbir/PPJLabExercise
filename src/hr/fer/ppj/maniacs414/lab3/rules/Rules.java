@@ -964,13 +964,13 @@ public class Rules {
     }
 
     private static boolean isChar(String text) {
-        return text.length() == 1 ||
-                text.equals("\\t") ||
-                text.equals("\\n") ||
-                text.equals("\\0") ||
-                text.equals("\\'") ||
-                text.equals("\\\"") ||
-                text.equals("\\\\");
+        return text.length() == 3 ||
+                text.equals("'\\t'") ||
+                text.equals("'\\n'") ||
+                text.equals("'\\0'") ||
+                text.equals("'\\''") ||
+                text.equals("'\\\"'") ||
+                text.equals("'\\\\'");
     }
 
     private static boolean isValidString(String string) {
