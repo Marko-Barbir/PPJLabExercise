@@ -644,7 +644,7 @@ public class Rules {
         } else if(node.children.size() == 4) {
             if(((TerminalNode) node.children.get(1)).token.equals("L_UGL_ZAGRADA")) {
                 NonterminalNode postfiks_izraz = (NonterminalNode) node.children.get(0);
-                NonterminalNode izraz = (NonterminalNode) node.children.get(0);
+                NonterminalNode izraz = (NonterminalNode) node.children.get(2);
                 check(postfiks_izraz, variableTable, functionTable);
                 Type postfiks_type = (Type) postfiks_izraz.props.get("tip");
                 if(!(postfiks_type instanceof ArrayType)) {
@@ -661,7 +661,7 @@ public class Rules {
             }
             else {
                 NonterminalNode postfiks_izraz = (NonterminalNode) node.children.get(0);
-                NonterminalNode lista_argumenata = (NonterminalNode) node.children.get(0);
+                NonterminalNode lista_argumenata = (NonterminalNode) node.children.get(2);
                 check(postfiks_izraz, variableTable, functionTable);
                 check(lista_argumenata, variableTable, functionTable);
                 if(!(postfiks_izraz.props.get("tip") instanceof FunctionType funkcija)) {
