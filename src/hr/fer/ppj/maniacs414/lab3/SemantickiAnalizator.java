@@ -25,19 +25,31 @@ public class SemantickiAnalizator {
             return;
         }
 
-        Map<String, Boolean> allFunctions = new HashMap<>();
+        Map<String, Map<FunctionType, Boolean>> allFunctions = new HashMap<>();
         markDefinedFunctions(functionTable, allFunctions);
-        if(allFunctions.values().contains(false)){
-            System.out.println("function");
-            return;
+        for(Map<FunctionType, Boolean> map : allFunctions.values()){
+            if(map.values().contains(false)){
+                System.out.println("function");
+                return;
+            }
         }
     }
 
-    private static void markDefinedFunctions(FunctionTable table, Map<String, Boolean> allFunctions){
+    private static void markDefinedFunctions(FunctionTable table, Map<String, Map<FunctionType, Boolean>> allFunctions){
         for (String name : table.functions.keySet()){
             FunctionType type = table.functions.get(name);
-            if(!allFunctions.containsKey(name) || type.isDefined()){
-                allFunctions.put(name, type.isDefined());
+            if(!allFunctions.containsKey(name)){
+                Map<FunctionType, Boolean> newMap = new HashMap<>();
+                newMap.put(type, type.isDefined());
+                allFunctions.put(name, newMap);
+            }
+
+            if(!allFunctions.get(name).containsKey(type)){
+                allFunctions.get(name).put(type, type.isDefined());
+            }
+
+            if(type.isDefined()){
+                allFunctions.get(name).put(type, type.isDefined());
             }
         }
 

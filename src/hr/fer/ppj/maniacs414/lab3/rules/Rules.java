@@ -65,7 +65,7 @@ public class Rules {
             }
         }
 
-        else if(node.name.equals("naredba_skoka")){
+            else if(node.name.equals("naredba_skoka")){
             if(node.children.size() == 3){
                 naredba_skoka3(node, variableTable, functionTable);
             }

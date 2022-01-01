@@ -1,6 +1,7 @@
 package hr.fer.ppj.maniacs414.lab3.types;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class FunctionType implements Type {
@@ -45,5 +46,10 @@ public class FunctionType implements Type {
         if(!(obj instanceof FunctionType other)) return false;
         return this.returnType.equals(other.returnType) &&
                 this.paramTypes.equals(other.paramTypes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(returnType, paramTypes);
     }
 }
