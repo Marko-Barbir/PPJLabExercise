@@ -896,7 +896,7 @@ public class Rules {
         }
         if(i.children.size()==1
                 && i.children.get(0) instanceof TerminalNode
-                && ((TerminalNode) i.children.get(0)).token.equals("NIZ_ZNAKOvA")) {
+                && ((TerminalNode) i.children.get(0)).token.equals("NIZ_ZNAKOVA")) {
             isString = true;
         }
         if(isString) {
