@@ -1,4 +1,4 @@
-package lab3.types;
+package types;
 
 public interface Type {
     default boolean implicitCastsInto(Type other){

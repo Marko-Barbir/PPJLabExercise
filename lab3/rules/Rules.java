@@ -65,7 +65,7 @@ public class Rules {
             }
         }
 
-            else if(node.name.equals("naredba_skoka")){
+        else if(node.name.equals("naredba_skoka")){
             if(node.children.size() == 3){
                 naredba_skoka3(node, variableTable, functionTable);
             }
@@ -636,7 +636,7 @@ public class Rules {
     private static void primarni_izraz2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
         TerminalNode BROJ = (TerminalNode) node.children.get(0);
         if(new BigInteger(BROJ.value).compareTo(BigInteger.valueOf(2147483647)) > 0 ||
-            new BigInteger(BROJ.value).compareTo(BigInteger.valueOf(-2147483648)) < 0) {
+                new BigInteger(BROJ.value).compareTo(BigInteger.valueOf(-2147483648)) < 0) {
             error(node);
         }
         node.props.put("tip", new IntType());
@@ -695,10 +695,11 @@ public class Rules {
                 NonterminalNode lista_argumenata = (NonterminalNode) node.children.get(2);
                 check(postfiks_izraz, variableTable, functionTable);
                 check(lista_argumenata, variableTable, functionTable);
-                if(!(postfiks_izraz.props.get("tip") instanceof FunctionType funkcija)) {
+                if(!(postfiks_izraz.props.get("tip") instanceof FunctionType)) {
                     error(node);
                     throw new IllegalArgumentException();
                 }
+                FunctionType funkcija = (FunctionType) postfiks_izraz.props.get("tip");
                 List<Type> tipovi = (List<Type>) lista_argumenata.props.get("tipovi");
                 if(tipovi.size() != funkcija.paramTypes.size()) {
                     error(node);
@@ -714,10 +715,11 @@ public class Rules {
         } else if(node.children.size() == 3) {
             NonterminalNode postfiks_izraz = (NonterminalNode) node.children.get(0);
             check(postfiks_izraz, variableTable, functionTable);
-            if(!(postfiks_izraz.props.get("tip") instanceof FunctionType funkcija)) {
+            if(!(postfiks_izraz.props.get("tip") instanceof FunctionType)) {
                 error(node);
                 throw new IllegalArgumentException();
             }
+            FunctionType funkcija = (FunctionType) postfiks_izraz.props.get("tip");
             if(!funkcija.equals(new FunctionType(funkcija.returnType, new VoidType()))) {
                 error(node);
             }
@@ -727,7 +729,7 @@ public class Rules {
             NonterminalNode postfiks_izraz = (NonterminalNode) node.children.get(0);
             check(postfiks_izraz, variableTable, functionTable);
             if(!((boolean) postfiks_izraz.props.get("l-izraz")) ||
-                !((Type) postfiks_izraz.props.get("tip")).implicitCastsInto(new IntType())) {
+                    !((Type) postfiks_izraz.props.get("tip")).implicitCastsInto(new IntType())) {
                 error(node);
             }
             node.props.put("tip", new IntType());
@@ -811,10 +813,12 @@ public class Rules {
         NonterminalNode specifikator_tipa = (NonterminalNode) node.children.get(1);
         check(specifikator_tipa, variableTable, functionTable);
         Type tip = (Type) specifikator_tipa.props.get("tip");
-        if(tip instanceof CharType charType) {
+        if(tip instanceof CharType) {
+            CharType charType = (CharType) tip;
             charType.isConst = true;
             node.addProp("tip", charType);
-        } else if(tip instanceof IntType intType) {
+        } else if(tip instanceof IntType) {
+            IntType intType = (IntType) tip;
             intType.isConst = true;
             node.addProp("tip", intType);
         } else {
@@ -823,12 +827,19 @@ public class Rules {
     }
 
     private static void specifikator_tipa(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
-        node.props.put("tip", switch (((TerminalNode) node.children.get(0)).token) {
-            case "KR_VOID" -> new VoidType();
-            case "KR_CHAR" -> new CharType();
-            case "KR_INT" -> new IntType();
-            default -> {throw new IllegalStateException();}
-        });
+        switch (((TerminalNode) node.children.get(0)).token) {
+            case "KR_VOID":
+                node.props.put("tip", new VoidType());
+                break;
+            case "KR_CHAR":
+                node.props.put("tip", new CharType());
+                break;
+            case "KR_INT":
+                node.props.put("tip", new IntType());
+                break;
+            default:
+                throw new IllegalStateException();
+        }
     }
 
     private static void op_izraz1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
@@ -1038,18 +1049,22 @@ public class Rules {
     }
 
     private static boolean isNonConstantNumerical(Type type) {
-        if(type instanceof CharType chart) {
+        if(type instanceof CharType) {
+            CharType chart = (CharType) type;
             return !chart.isConst;
-        } else if(type instanceof IntType intt) {
+        } else if(type instanceof IntType) {
+            IntType intt = (IntType) type;
             return !intt.isConst;
         }
         return false;
     }
 
     private static boolean isConstantNumerical(Type type) {
-        if(type instanceof CharType chart) {
+        if(type instanceof CharType) {
+            CharType chart = (CharType) type;
             return chart.isConst;
-        } else if(type instanceof IntType intt) {
+        } else if(type instanceof IntType) {
+            IntType intt = (IntType) type;
             return intt.isConst;
         }
         return false;

@@ -1,6 +1,6 @@
 package parser;
 
-import Map;
+import java.util.Map;
 
 public abstract class Node {
     public Node parent;

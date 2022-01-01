@@ -48,7 +48,8 @@ public class CharType implements Type {
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof CharType other)) return false;
+        if(!(obj instanceof CharType)) return false;
+        CharType other = (CharType) obj;
         return other.isConst == this.isConst;
     }
 }

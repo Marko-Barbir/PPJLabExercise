@@ -49,7 +49,8 @@ public class IntType implements Type {
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof IntType other)) return false;
+        if(!(obj instanceof IntType)) return false;
+        IntType other = (IntType) obj;
         return this.isConst == other.isConst;
     }
 }
