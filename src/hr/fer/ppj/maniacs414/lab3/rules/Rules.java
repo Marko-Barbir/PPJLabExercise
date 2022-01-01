@@ -591,7 +591,7 @@ public class Rules {
 
     private static void primarni_izraz1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         TerminalNode IDN = (TerminalNode) node.children.get(0);
-        Type variable = variableTable.getType((String) IDN.token);
+        Type variable = variableTable.getType((String) IDN.value);
         if(variable == null) error(node);
         node.props.put("tip", variable);
         node.props.put("l-izraz", !isConstantNumerical(variable));
