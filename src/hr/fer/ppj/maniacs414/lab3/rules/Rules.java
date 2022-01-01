@@ -697,6 +697,9 @@ public class Rules {
                 error(node);
                 throw new IllegalArgumentException();
             }
+            if(!funkcija.equals(new FunctionType(funkcija.returnType, new VoidType()))) {
+                error(node);
+            }
             node.props.put("tip", funkcija.returnType);
             node.props.put("l-izraz", false);
         } else if(node.children.size() == 2) {
