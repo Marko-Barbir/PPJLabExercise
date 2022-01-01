@@ -16,8 +16,23 @@ public class ArrayType implements Type {
 
     @Override
     public boolean implicitCastsInto(Type other) {
-        return (elementType instanceof CharType && !((CharType) elementType).isConst) ||
-                elementType instanceof IntType && !((IntType) elementType).isConst;
+        if(!(other instanceof ArrayType arrayType)) {
+            return false;
+        }
+        if(elementType instanceof CharType charType) {
+            if(!charType.isConst) {
+                if(arrayType.elementType instanceof CharType charType1) {
+                    return charType1.isConst;
+                }
+            }
+        } else if(elementType instanceof IntType intType) {
+            if(!intType.isConst) {
+                if(arrayType.elementType instanceof IntType intType1) {
+                    return intType1.isConst;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
