@@ -16,6 +16,7 @@ public class ArrayType implements Type {
 
     @Override
     public boolean implicitCastsInto(Type other) {
+        if(this.equals(other)) return true;
         if(!(other instanceof ArrayType arrayType)) {
             return false;
         }
