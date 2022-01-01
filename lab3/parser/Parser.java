@@ -1,7 +1,7 @@
 package parser;
 
-import hr.fer.ppj.maniacs414.lab3.types.CharType;
-import hr.fer.ppj.maniacs414.lab3.types.IntType;
+import types.CharType;
+import types.IntType;
 
 import java.io.InputStream;
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
 package parser;
 
-import hr.fer.ppj.maniacs414.lab3.rules.Rules;
+import rules.Rules;
 
 import java.util.ArrayList;
 import java.util.HashMap;

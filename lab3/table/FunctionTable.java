@@ -1,7 +1,7 @@
 package table;
 
-import hr.fer.ppj.maniacs414.lab3.types.FunctionType;
-import hr.fer.ppj.maniacs414.lab3.types.Type;
+import types.FunctionType;
+import types.Type;
 
 import java.util.ArrayList;
 import java.util.HashMap;

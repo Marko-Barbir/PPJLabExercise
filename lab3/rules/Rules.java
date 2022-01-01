@@ -1,10 +1,10 @@
 package rules;
 
-import hr.fer.ppj.maniacs414.lab3.parser.NonterminalNode;
-import hr.fer.ppj.maniacs414.lab3.parser.TerminalNode;
-import hr.fer.ppj.maniacs414.lab3.table.FunctionTable;
-import hr.fer.ppj.maniacs414.lab3.table.VariableTable;
-import hr.fer.ppj.maniacs414.lab3.types.*;
+import parser.NonterminalNode;
+import parser.TerminalNode;
+import table.FunctionTable;
+import table.VariableTable;
+import types.*;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,6 @@
 package table;
 
-import hr.fer.ppj.maniacs414.lab3.types.Type;
+import types.Type;
 
 import java.util.HashMap;
 
