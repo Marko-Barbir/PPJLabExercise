@@ -393,7 +393,7 @@ public class Rules {
         checkIfFunctionAlreadyDefined(functionName, functionTable, node);
         FunctionTable globalScope = functionTable.getGlobalScope();
         FunctionType newFunction = new FunctionType(returnType, new VoidType());
-        if(globalScope.isAlreadyDeclared(functionName) && !globalScope.getFunction(functionName).equals(newFunction)){
+        if(isAlreadyDeclared(functionName, variableTable.getGlobalScope(), globalScope) && !globalScope.getFunction(functionName).equals(newFunction)){
             error(node);
         }
         newFunction.isDefined = true;
@@ -414,7 +414,7 @@ public class Rules {
         List<Type> paramTypes = (List<Type>) node.children.get(3).props.get("tipovi");
         List<String> names = (List<String>) node.children.get(3).props.get("imena");
         FunctionType newFunction = new FunctionType(returnType, paramTypes);
-        if(globalScope.isAlreadyDeclared(functionName) && !globalScope.getFunction(functionName).equals(newFunction)){
+        if(isAlreadyDeclared(functionName, variableTable.getGlobalScope(), globalScope) && !globalScope.getFunction(functionName).equals(newFunction)){
             error(node);
         }
         newFunction.isDefined = true;
@@ -928,11 +928,15 @@ public class Rules {
             error(node);
         }
         TerminalNode IDN = (TerminalNode) node.children.get(0);
-        if(variableTable.isAlreadyDeclared(IDN.value)) {
+        if(isAlreadyDeclared(IDN.value, variableTable, functionTable)) {
             error(node);
         }
         variableTable.variables.put(IDN.value, ntip);
         node.addProp("tip", ntip);
+    }
+
+    private static boolean isAlreadyDeclared(String idn, VariableTable variableTable, FunctionTable functionTable) {
+        return variableTable.isAlreadyDeclared(idn) || functionTable.isAlreadyDeclared(idn);
     }
 
     private static void izravni_deklarator2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
@@ -943,7 +947,7 @@ public class Rules {
         TerminalNode IDN = (TerminalNode) node.children.get(0);
         TerminalNode BROJ = (TerminalNode) node.children.get(2);
         int br_elem= Integer.parseInt(BROJ.value);
-        if(variableTable.isAlreadyDeclared(IDN.value)) {
+        if(isAlreadyDeclared(IDN.value, variableTable, functionTable)) {
             error(node);
         }
         if (br_elem <= 0 || br_elem > 1024) {
@@ -958,7 +962,7 @@ public class Rules {
         Type ntip = (Type) node.props.get("ntip");
         TerminalNode IDN = (TerminalNode) node.children.get(0);
         FunctionType funkcija = new FunctionType(ntip, new VoidType());
-        if(functionTable.isAlreadyDeclared(IDN.value)) {
+        if(isAlreadyDeclared(IDN.value, variableTable, functionTable)) {
             if(!functionTable.functions.get(IDN.value).equals(funkcija)) {
                 error(node);
             }
@@ -974,7 +978,7 @@ public class Rules {
         NonterminalNode lista_parametara = (NonterminalNode) node.children.get(2);
         check(lista_parametara, variableTable, functionTable);
         FunctionType funkcija = new FunctionType(ntip, ((List<Type>) lista_parametara.props.get("tipovi")).toArray(new Type[0]));
-        if(functionTable.isAlreadyDeclared(IDN.value)) {
+        if(isAlreadyDeclared(IDN.value, variableTable, functionTable)) {
             if(!functionTable.functions.get(IDN.value).equals(funkcija)) {
                 error(node);
             }
