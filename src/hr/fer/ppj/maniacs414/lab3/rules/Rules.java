@@ -601,7 +601,7 @@ public class Rules {
 
     private static void primarni_izraz1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         TerminalNode IDN = (TerminalNode) node.children.get(0);
-        Type variable = variableTable.getType((String) IDN.value);
+        Type variable = getType(functionTable, variableTable, IDN.value);
         if(variable == null){
             variable = functionTable.getFunction(IDN.value);
             if(variable == null) {
@@ -1025,9 +1025,12 @@ public class Rules {
         return false;
     }
 
-    private static Type getType(FunctionTable functionTable, VariableTable variableTable){
+    private static Type getType(FunctionTable functionTable, VariableTable variableTable, String idn){
         Type res = null;
-
+        while (variableTable.parentTable != null) {
+            if(variableTable.variables.containsKey(idn)) return variableTable.variables.get(idn);
+            if(functionTable.functions.containsKey(idn)) return functionTable.functions.get(idn);
+        }
         return res;
     }
 }
