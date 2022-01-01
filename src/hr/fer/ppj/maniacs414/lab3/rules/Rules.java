@@ -657,7 +657,7 @@ public class Rules {
                     error(node);
                 }
                 node.props.put("tip", arrt.elementType);
-                node.props.put("l-izraz", !isNonConstantNumerical(arrt.elementType));
+                node.props.put("l-izraz", !isConstantNumerical(arrt.elementType));
             }
             else {
                 NonterminalNode postfiks_izraz = (NonterminalNode) node.children.get(0);
@@ -760,7 +760,7 @@ public class Rules {
         check(cast_izraz, variableTable, functionTable);
         ((Type) cast_izraz.props.get("tip")).explicitCastsInto((Type) ime_tipa.props.get("tip"));
         node.addProp("tip", ime_tipa.props.get("tip"));
-        node.addProp("l-izraz", 0);
+        node.addProp("l-izraz", false);
     }
 
     private static void ime_tipa1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
@@ -826,13 +826,14 @@ public class Rules {
         NonterminalNode postfiks_izraz = (NonterminalNode) node.children.get(0);
         NonterminalNode izraz_pridruzivanja = (NonterminalNode) node.children.get(2);
         check(postfiks_izraz, variableTable, functionTable);
-        if((boolean) postfiks_izraz.props.get("l-izraz")) {
-            error(node);
-        }
-        if(!((Type) izraz_pridruzivanja.props.get("tip")).implicitCastsInto((Type) postfiks_izraz.props.get("tip"))) {
+        if(!(boolean) postfiks_izraz.props.get("l-izraz")) {
             error(node);
         }
         check(izraz_pridruzivanja, variableTable, functionTable);
+        if(!((Type) izraz_pridruzivanja.props.get("tip")).implicitCastsInto((Type) postfiks_izraz.props.get("tip"))) {
+            error(node);
+        }
+
         node.addProp("tip", postfiks_izraz.props.get("tip"));
         node.addProp("l-izraz", false);
     }
@@ -999,6 +1000,15 @@ public class Rules {
             return !chart.isConst;
         } else if(type instanceof IntType intt) {
             return !intt.isConst;
+        }
+        return false;
+    }
+
+    private static boolean isConstantNumerical(Type type) {
+        if(type instanceof CharType chart) {
+            return chart.isConst;
+        } else if(type instanceof IntType intt) {
+            return intt.isConst;
         }
         return false;
     }
