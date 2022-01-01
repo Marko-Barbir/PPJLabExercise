@@ -1,11 +1,11 @@
-import hr.fer.ppj.maniacs414.lab3.parser.NonterminalNode;
-import hr.fer.ppj.maniacs414.lab3.parser.Parser;
-import hr.fer.ppj.maniacs414.lab3.rules.Rules;
-import hr.fer.ppj.maniacs414.lab3.table.FunctionTable;
-import hr.fer.ppj.maniacs414.lab3.table.VariableTable;
-import hr.fer.ppj.maniacs414.lab3.types.FunctionType;
-import hr.fer.ppj.maniacs414.lab3.types.IntType;
-import hr.fer.ppj.maniacs414.lab3.types.VoidType;
+import parser.NonterminalNode;
+import parser.Parser;
+import rules.Rules;
+import table.FunctionTable;
+import table.VariableTable;
+import types.FunctionType;
+import types.IntType;
+import types.VoidType;
 
 import java.util.HashMap;
 import java.util.Map;
