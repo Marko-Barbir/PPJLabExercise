@@ -1,6 +1,5 @@
 package hr.fer.ppj.maniacs414.lab3.rules;
 
-import hr.fer.ppj.maniacs414.lab3.parser.Node;
 import hr.fer.ppj.maniacs414.lab3.parser.NonterminalNode;
 import hr.fer.ppj.maniacs414.lab3.parser.TerminalNode;
 import hr.fer.ppj.maniacs414.lab3.table.FunctionTable;
@@ -9,11 +8,8 @@ import hr.fer.ppj.maniacs414.lab3.types.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import hr.fer.ppj.maniacs414.lab3.types.*;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Rules {
     public static void check(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -221,6 +217,14 @@ public class Rules {
             if(node.children.size()==1) izraz1(node, variableTable, functionTable);
             else if(node.children.size()==3) izraz2(node, variableTable, functionTable);
         }
+        else if(node.name.equals("lista_izraza_pridruzivanja")) {
+            if(node.children.size()==1) lista_izraza_pridruzivanja1(node, variableTable, functionTable);
+            else if(node.children.size()==3) lista_izraza_pridruzivanja2(node, variableTable, functionTable);
+        }
+        else if (node.name.equals("inicijalizator")) {
+            if(node.children.size()==1) inicijalizator1(node, variableTable, functionTable);
+            else if(node.children.size()==3) inicijalizator2(node, variableTable, functionTable);
+        }
     }
 
     private static void error(NonterminalNode node){
@@ -382,7 +386,7 @@ public class Rules {
         if (node.children.get(0).props.get("tip").equals(new CharType(true)) || node.children.get(0).props.get("tip").equals(new IntType(true))){
             error(node);
         }
-        String functionName = (String)node.children.get(1).props.get("ime");
+        String functionName = ((TerminalNode) node.children.get(1)).value;
         Type returnType = (Type)node.children.get(0).props.get("tip");
         checkIfFunctionAlreadyDefined(functionName, functionTable, node);
         FunctionTable globalScope = functionTable.getGlobalScope();
@@ -400,7 +404,7 @@ public class Rules {
         if (node.children.get(0).props.get("tip").equals(new CharType(true)) || node.children.get(0).props.get("tip").equals(new IntType(true))){
             error(node);
         }
-        String functionName = (String)node.children.get(1).props.get("ime");
+        String functionName = ((TerminalNode) node.children.get(1)).value;
         Type returnType = (Type)node.children.get(0).props.get("tip");
         checkIfFunctionAlreadyDefined(functionName, functionTable, node);
         check((NonterminalNode) node.children.get(3), variableTable, functionTable);
@@ -441,7 +445,7 @@ public class Rules {
             error(node);
         }
         node.addProp("tip", type);
-        node.addProp("ime", (String)node.children.get(1).props.get("ime"));
+        node.addProp("ime", ((TerminalNode) node.children.get(1)).value);
     }
 
     private static void deklaracija_parametra2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -451,7 +455,7 @@ public class Rules {
             error(node);
         }
         node.addProp("tip", new ArrayType(type));
-        node.addProp("ime", (String)node.children.get(1).props.get("ime"));
+        node.addProp("ime", ((TerminalNode) node.children.get(1)).value);
     }
 
     private static void lista_deklaracija1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -585,10 +589,6 @@ public class Rules {
 //        node.addProp("tip", newFunction);
 //    }
 
-
-    private static void example_example1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
-        return;
-    }
     private static void primarni_izraz1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         TerminalNode IDN = (TerminalNode) node.children.get(0);
         Type variable = variableTable.getType((String) IDN.token);
@@ -960,11 +960,6 @@ public class Rules {
             functionTable.functions.put(IDN.value, funkcija);
         }
         node.addProp("tip", funkcija);
-    }
-
-    private static void error(Node node) {
-        System.out.println(node);
-        System.exit(0);
     }
 
     private static boolean isChar(String text) {
