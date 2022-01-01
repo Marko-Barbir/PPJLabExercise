@@ -24,4 +24,13 @@ public class VariableTable {
         }
         return null;
     }
+
+    public VariableTable getGlobalScope(){
+        VariableTable table = this;
+        while(table.parentTable != null){
+            table = table.parentTable;
+        }
+
+        return table;
+    }
 }
