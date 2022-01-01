@@ -5,8 +5,8 @@ import hr.fer.ppj.maniacs414.lab3.types.Type;
 import java.util.HashMap;
 
 public class VariableTable {
-    HashMap<String, Type> variables;
-    VariableTable parentTable;
+    public HashMap<String, Type> variables;
+    public VariableTable parentTable;
 
     public VariableTable(VariableTable parentTable) {
         this.parentTable = parentTable;

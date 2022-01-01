@@ -6,7 +6,7 @@ import hr.fer.ppj.maniacs414.lab3.types.Type;
 import java.util.HashMap;
 
 public class FunctionTable {
-    HashMap<String, FunctionType> functions;
+    public HashMap<String, FunctionType> functions;
 
     public FunctionTable() {
         functions = new HashMap<>();
