@@ -592,9 +592,14 @@ public class Rules {
     private static void primarni_izraz1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         TerminalNode IDN = (TerminalNode) node.children.get(0);
         Type variable = variableTable.getType((String) IDN.value);
-        if(variable == null) error(node);
+        if(variable == null){
+            variable = functionTable.getFunction(IDN.value);
+            if(variable == null) {
+                error(node);
+            }
+        }
         node.props.put("tip", variable);
-        node.props.put("l-izraz", !isConstantNumerical(variable));
+        node.props.put("l-izraz", isNonConstantNumerical(variable));
     }
 
     private static void primarni_izraz2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
@@ -652,7 +657,7 @@ public class Rules {
                     error(node);
                 }
                 node.props.put("tip", arrt.elementType);
-                node.props.put("l-izraz", !isConstantNumerical(arrt.elementType));
+                node.props.put("l-izraz", !isNonConstantNumerical(arrt.elementType));
             }
             else {
                 NonterminalNode postfiks_izraz = (NonterminalNode) node.children.get(0);
@@ -989,12 +994,18 @@ public class Rules {
         return true;
     }
 
-    private static boolean isConstantNumerical(Type type) {
+    private static boolean isNonConstantNumerical(Type type) {
         if(type instanceof CharType chart) {
-            return chart.isConst;
+            return !chart.isConst;
         } else if(type instanceof IntType intt) {
-            return intt.isConst;
+            return !intt.isConst;
         }
         return false;
+    }
+
+    private static Type getType(FunctionTable functionTable, VariableTable variableTable){
+        Type res = null;
+
+        return res;
     }
 }
