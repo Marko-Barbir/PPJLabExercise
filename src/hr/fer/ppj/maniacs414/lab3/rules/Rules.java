@@ -737,8 +737,8 @@ public class Rules {
     private static void unarni_izraz2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
         NonterminalNode unarni_izraz = (NonterminalNode) node.children.get(1);
         check(unarni_izraz, variableTable, functionTable);
-        if(!((boolean) unarni_izraz.props.get("l-izraz")) ||
-                ((Type) unarni_izraz.props.get("tip")).implicitCastsInto(new IntType())) {
+        if(!(((boolean) unarni_izraz.props.get("l-izraz")) ||
+                ((Type) unarni_izraz.props.get("tip")).implicitCastsInto(new IntType()))) {
             error(node);
         }
         node.addProp("tip", new IntType());
