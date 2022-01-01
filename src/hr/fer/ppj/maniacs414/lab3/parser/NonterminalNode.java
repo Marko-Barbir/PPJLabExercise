@@ -43,4 +43,15 @@ public class NonterminalNode extends Node{
     public String toString() {
         return "<" + name + ">";
     }
+
+    public String getProduction(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.toString());
+        sb.append(" ::=");
+        for(Node child : children){
+            sb.append(" " + child);
+        }
+
+        return sb.toString();
+    }
 }

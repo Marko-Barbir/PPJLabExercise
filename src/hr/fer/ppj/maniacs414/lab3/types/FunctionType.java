@@ -14,6 +14,12 @@ public class FunctionType implements Type {
         isDefined = false;
     }
 
+    public FunctionType(Type returnType, List<Type> paramTypes) {
+        this.returnType = returnType;
+        this.paramTypes = paramTypes;
+        isDefined = false;
+    }
+
     @Override
     public String getTypeName() {
         if(paramTypes.size() == 1 && paramTypes.get(0) instanceof VoidType) {
@@ -37,7 +43,7 @@ public class FunctionType implements Type {
     @Override
     public boolean equals(Object obj) {
         if(!(obj instanceof FunctionType other)) return false;
-        return this.returnType == other.returnType &&
-                this.paramTypes == other.paramTypes;
+        return this.returnType.equals(other.returnType) &&
+                this.paramTypes.equals(other.paramTypes);
     }
 }

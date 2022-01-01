@@ -21,6 +21,6 @@ public class TerminalNode extends Node {
 
     @Override
     public String toString() {
-        return token + " " + line + " " + value;
+        return String.format("%s(%d,%s)", token, line, value);
     }
 }

@@ -28,6 +28,7 @@ public class Parser {
             }
 
             if(spaces > 0) {
+                node.parent = parents.get(spaces - 1);
                 ((NonterminalNode)parents.get(spaces - 1)).addChild(node);
             }
 
