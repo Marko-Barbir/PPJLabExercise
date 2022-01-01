@@ -296,12 +296,14 @@ public class Rules {
     }
 
     private static void slozena_naredba1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
-        check((NonterminalNode) node.children.get(1), variableTable, functionTable);
+        check((NonterminalNode) node.children.get(1), new VariableTable(variableTable), new FunctionTable(functionTable));
     }
 
     private static void slozena_naredba2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
-        check((NonterminalNode) node.children.get(1), variableTable, functionTable);
-        check((NonterminalNode) node.children.get(2), variableTable, functionTable);
+        VariableTable newVariableTable = new VariableTable(variableTable);
+        FunctionTable newFunctionTable = new FunctionTable(functionTable);
+        check((NonterminalNode) node.children.get(1), newVariableTable, newFunctionTable);
+        check((NonterminalNode) node.children.get(2), newVariableTable, newFunctionTable);
     }
 
     private static void lista_naredbi1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -419,7 +421,7 @@ public class Rules {
         functionTable.functions.put(functionName, newFunction);
         VariableTable newVariableScope = new VariableTable(variableTable);
         for (int i = 0; i < paramTypes.size(); i++){
-            newVariableScope.variables.put((String)names.get(i), (Type)paramTypes);
+            newVariableScope.variables.put((String)names.get(i), (Type) paramTypes.get(i));
         }
         check((NonterminalNode) node.children.get(5), newVariableScope, new FunctionTable(functionTable));
     }
