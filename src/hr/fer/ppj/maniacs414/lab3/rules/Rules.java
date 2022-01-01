@@ -730,6 +730,8 @@ public class Rules {
                 !((Type) postfiks_izraz.props.get("tip")).implicitCastsInto(new IntType())) {
                 error(node);
             }
+            node.props.put("tip", new IntType());
+            node.props.put("l-izraz", false);
         }
     }
 
