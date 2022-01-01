@@ -431,11 +431,19 @@ public class Rules {
     }
 
     private static void lista_parametara2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
-        check((NonterminalNode) node.children.get(0), variableTable, functionTable);
-        check((NonterminalNode) node.children.get(2), variableTable, functionTable);
-        if(((List<String>)node.children.get(0).props.get("imena")).contains((String)node.children.get(2).props.get("ime"))) {
+        NonterminalNode lista_parametara = (NonterminalNode) node.children.get(0);
+        NonterminalNode deklaracija_parametra = (NonterminalNode) node.children.get(2);
+        check(lista_parametara, variableTable, functionTable);
+        check(deklaracija_parametra, variableTable, functionTable);
+        List<Type> tipovi = new ArrayList<>((List<Type>) lista_parametara.props.get("tipovi"));
+        List<String> imena = new ArrayList<>((List<String>) lista_parametara.props.get("imena"));
+        if(imena.contains((String)node.children.get(2).props.get("ime"))) {
             error(node);
         }
+        tipovi.add((Type) deklaracija_parametra.props.get("tip"));
+        imena.add((String) deklaracija_parametra.props.get("ime"));
+        node.props.put("tipovi", tipovi);
+        node.props.put("imena", imena);
     }
 
     private static void deklaracija_parametra1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
