@@ -296,12 +296,34 @@ public class Rules {
     }
 
     private static void slozena_naredba1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
-        check((NonterminalNode) node.children.get(1), new VariableTable(variableTable), new FunctionTable(functionTable));
+        VariableTable newVariableTable = new VariableTable(variableTable);
+        FunctionTable newFunctionTable = new FunctionTable(functionTable);
+
+        if(node.props.containsKey("tipovi")){
+            List<Type> paramTypes = (List<Type>) node.props.get("tipovi");
+            List<String> names = (List<String>) node.props.get("imena");
+
+            for (int i = 0; i < paramTypes.size(); i++){
+                newVariableTable.variables.put((String)names.get(i), (Type) paramTypes.get(i));
+            }
+        }
+
+        check((NonterminalNode) node.children.get(1), newVariableTable, newFunctionTable);
     }
 
     private static void slozena_naredba2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         VariableTable newVariableTable = new VariableTable(variableTable);
         FunctionTable newFunctionTable = new FunctionTable(functionTable);
+
+        if(node.props.containsKey("tipovi")){
+            List<Type> paramTypes = (List<Type>) node.props.get("tipovi");
+            List<String> names = (List<String>) node.props.get("imena");
+
+            for (int i = 0; i < paramTypes.size(); i++){
+                newVariableTable.variables.put((String)names.get(i), (Type) paramTypes.get(i));
+            }
+        }
+
         check((NonterminalNode) node.children.get(1), newVariableTable, newFunctionTable);
         check((NonterminalNode) node.children.get(2), newVariableTable, newFunctionTable);
     }
@@ -419,11 +441,10 @@ public class Rules {
         }
         newFunction.isDefined = true;
         functionTable.functions.put(functionName, newFunction);
-        VariableTable newVariableScope = new VariableTable(variableTable);
-        for (int i = 0; i < paramTypes.size(); i++){
-            newVariableScope.variables.put((String)names.get(i), (Type) paramTypes.get(i));
-        }
-        check((NonterminalNode) node.children.get(5), newVariableScope, new FunctionTable(functionTable));
+
+        node.children.get(5).addProp("tipovi", paramTypes);
+        node.children.get(5).addProp("imena", names);
+        check((NonterminalNode) node.children.get(5), variableTable, functionTable);
     }
 
     private static void lista_parametara1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
