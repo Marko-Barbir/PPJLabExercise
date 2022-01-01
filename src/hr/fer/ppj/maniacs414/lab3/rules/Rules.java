@@ -274,10 +274,10 @@ public class Rules {
 
     private static void checkIfFunctionAlreadyDefined(String name, FunctionTable table, NonterminalNode node){
         while(table != null){
-            table = table.parentTable;
             if(table.isAlreadyDeclared(name) && table.getFunction(name).isDefined()){
                 error(node);
             }
+            table = table.parentTable;
         }
     }
 
@@ -784,6 +784,7 @@ public class Rules {
             case "KR_VOID" -> new VoidType();
             case "KR_CHAR" -> new CharType();
             case "KR_INT" -> new IntType();
+            default -> {throw new IllegalStateException();}
         });
     }
 
