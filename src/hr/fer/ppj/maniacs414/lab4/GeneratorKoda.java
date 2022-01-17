@@ -12,7 +12,7 @@ import hr.fer.ppj.maniacs414.lab4.types.VoidType;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SemantickiAnalizator {
+public class GeneratorKoda {
     public static void main(String[] args) {
         NonterminalNode root = Parser.parseInput(System.in);
         VariableTable variableTable = new VariableTable(null);
