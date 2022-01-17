@@ -5,8 +5,18 @@ import hr.fer.ppj.maniacs414.lab4.types.Type;
 import java.util.HashMap;
 
 public class VariableTable {
-    public HashMap<String, Type> variables;
+    public static class VariableEntry {
+        public Type type;
+        public int stackIndex;
+
+        public VariableEntry(Type type, int stackIndex) {
+            this.type = type;
+            this.stackIndex = stackIndex;
+        }
+    }
     public VariableTable parentTable;
+
+    public HashMap<String, VariableEntry> variables;
 
     public VariableTable(VariableTable parentTable) {
         this.parentTable = parentTable;
@@ -18,7 +28,7 @@ public class VariableTable {
     }
 
     public Type getType(String name) {
-        if(variables.containsKey(name)) return variables.get(name);
+        if(variables.containsKey(name)) return variables.get(name).type;
         if(parentTable!=null) {
             return parentTable.getType(name);
         }

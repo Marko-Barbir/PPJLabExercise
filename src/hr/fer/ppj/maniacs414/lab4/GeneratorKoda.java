@@ -10,6 +10,7 @@ import hr.fer.ppj.maniacs414.lab4.types.IntType;
 import hr.fer.ppj.maniacs414.lab4.types.VoidType;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class GeneratorKoda {
@@ -33,11 +34,27 @@ public class GeneratorKoda {
                 return;
             }
         }
+
+        generateCode(variableTable, functionTable);
+    }
+
+    private static void generateCode(VariableTable variableTable, FunctionTable functionTable) {
+        System.out.println("""
+                \tMOVE 40000, R7
+                \tCALL F_MAIN
+                \tHALT
+                """);
+
+        for(Map.Entry<String, FunctionTable.FunctionEntry> entry : functionTable.functions.entrySet()) {
+            System.out.printf("F_%s%n", entry.getKey().toUpperCase());
+            entry.getValue().generatedCode.forEach(System.out::println);
+            System.out.println();
+        }
     }
 
     private static void markDefinedFunctions(FunctionTable table, Map<String, Map<FunctionType, Boolean>> allFunctions){
         for (String name : table.functions.keySet()){
-            FunctionType type = table.functions.get(name);
+            FunctionType type = table.functions.get(name).type;
             if(!allFunctions.containsKey(name)){
                 Map<FunctionType, Boolean> newMap = new HashMap<>();
                 newMap.put(type, type.isDefined());

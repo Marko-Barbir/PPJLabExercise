@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Rules {
+    private static FunctionTable.FunctionEntry currentFunction = null;
+
     public static void check(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         if(node.name.equals("slozena_naredba")){
             if(node.children.size() == 3){
@@ -303,7 +305,7 @@ public class Rules {
             List<String> names = (List<String>) node.props.get("imena");
 
             for (int i = 0; i < paramTypes.size(); i++){
-                newVariableTable.variables.put((String)names.get(i), (Type) paramTypes.get(i));
+                newVariableTable.variables.put((String)names.get(i), new VariableTable.VariableEntry(paramTypes.get(i), i * 4));
             }
         }
 
@@ -319,7 +321,7 @@ public class Rules {
             List<String> names = (List<String>) node.props.get("imena");
 
             for (int i = 0; i < paramTypes.size(); i++){
-                newVariableTable.variables.put((String)names.get(i), (Type) paramTypes.get(i));
+                newVariableTable.variables.put((String)names.get(i), new VariableTable.VariableEntry((Type) paramTypes.get(i), 0));
             }
         }
 
@@ -389,6 +391,7 @@ public class Rules {
     private static void naredba_skoka3(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         check((NonterminalNode) node.children.get(1), variableTable, functionTable);
         checkIfInsideFunctionNonVoid((Type) node.children.get(1).props.get("tip"), node);
+        currentFunction.generatedCode.add("\tPOP R6");
     }
 
     private static void prijevodna_jedinica1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -418,7 +421,8 @@ public class Rules {
             error(node);
         }
         newFunction.isDefined = true;
-        functionTable.functions.put(functionName, newFunction);
+        currentFunction = new FunctionTable.FunctionEntry(newFunction);
+        functionTable.functions.put(functionName, currentFunction);
         check((NonterminalNode) node.children.get(5), new VariableTable(variableTable), new FunctionTable(functionTable));
     }
 
@@ -439,7 +443,8 @@ public class Rules {
             error(node);
         }
         newFunction.isDefined = true;
-        functionTable.functions.put(functionName, newFunction);
+        currentFunction = new FunctionTable.FunctionEntry(newFunction);
+        functionTable.functions.put(functionName, currentFunction);
 
         node.children.get(5).addProp("tipovi", paramTypes);
         node.children.get(5).addProp("imena", names);
@@ -638,6 +643,10 @@ public class Rules {
             new BigInteger(BROJ.value).compareTo(BigInteger.valueOf(-2147483648)) < 0) {
             error(node);
         }
+
+        currentFunction.generatedCode.add(String.format("\tMOVE %s %s, R0", "%D", BROJ.value));
+        currentFunction.generatedCode.add("\tPUSH R0");
+
         node.props.put("tip", new IntType());
         node.props.put("l-izraz", false);
     }
@@ -964,7 +973,7 @@ public class Rules {
         if(isAlreadyDeclared(IDN.value, variableTable, functionTable)) {
             error(node);
         }
-        variableTable.variables.put(IDN.value, ntip);
+        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(ntip, 0));
         node.addProp("tip", ntip);
     }
 
@@ -986,7 +995,7 @@ public class Rules {
         if (br_elem <= 0 || br_elem > 1024) {
             error(node);
         }
-        variableTable.variables.put(IDN.value, new ArrayType(ntip));
+        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), 0) );
         node.addProp("tip", new ArrayType(ntip));
         node.addProp("br-elem", br_elem);
     }
@@ -1000,7 +1009,7 @@ public class Rules {
                 error(node);
             }
         } else {
-            functionTable.functions.put(IDN.value, funkcija);
+            functionTable.functions.put(IDN.value, new FunctionTable.FunctionEntry(funkcija));
         }
         node.addProp("tip", funkcija);
     }
@@ -1016,7 +1025,7 @@ public class Rules {
                 error(node);
             }
         } else {
-            functionTable.functions.put(IDN.value, funkcija);
+            functionTable.functions.put(IDN.value, new FunctionTable.FunctionEntry(funkcija));
         }
         node.addProp("tip", funkcija);
     }
@@ -1072,8 +1081,8 @@ public class Rules {
     private static Type getType(FunctionTable functionTable, VariableTable variableTable, String idn){
         Type res = null;
         while (variableTable.parentTable != null) {
-            if(variableTable.variables.containsKey(idn)) return variableTable.variables.get(idn);
-            if(functionTable.functions.containsKey(idn)) return functionTable.functions.get(idn);
+            if(variableTable.variables.containsKey(idn)) return variableTable.variables.get(idn).type;
+            if(functionTable.functions.containsKey(idn)) return functionTable.functions.get(idn).type;
             variableTable = variableTable.parentTable;
             functionTable = functionTable.parentTable;
         }

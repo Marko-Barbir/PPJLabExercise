@@ -7,7 +7,19 @@ import java.util.HashMap;
 import java.util.List;
 
 public class FunctionTable {
-    public HashMap<String, FunctionType> functions;
+    public static class FunctionEntry {
+        public FunctionType type;
+        public int stackSize;
+        public List<String> generatedCode;
+
+        public FunctionEntry(FunctionType type) {
+            this.type = type;
+            this.stackSize = type.paramTypes.size();
+            this.generatedCode = new ArrayList<>();
+        }
+    }
+
+    public HashMap<String, FunctionEntry> functions;
     public FunctionTable parentTable;
     public List<FunctionTable> children;
 
@@ -25,7 +37,7 @@ public class FunctionTable {
     }
 
     public FunctionType getFunction(String name) {
-        if(functions.containsKey(name)) return functions.get(name);
+        if(functions.containsKey(name)) return functions.get(name).type;
         if(parentTable!=null) {
             return parentTable.getFunction(name);
         }
