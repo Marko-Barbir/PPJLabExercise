@@ -424,6 +424,7 @@ public class Rules {
         currentFunction = new FunctionTable.FunctionEntry(newFunction);
         functionTable.functions.put(functionName, currentFunction);
         check((NonterminalNode) node.children.get(5), new VariableTable(variableTable), new FunctionTable(functionTable));
+        currentFunction.stackSize--;
     }
 
     private static void definicija_funkcije2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -449,6 +450,7 @@ public class Rules {
         node.children.get(5).addProp("tipovi", paramTypes);
         node.children.get(5).addProp("imena", names);
         check((NonterminalNode) node.children.get(5), variableTable, functionTable);
+        currentFunction.stackSize--;
     }
 
     private static void lista_parametara1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -636,7 +638,7 @@ public class Rules {
 
         Object entry = getEntry(functionTable, variableTable, IDN.value);
         if(entry instanceof VariableTable.VariableEntry variableEntry) {
-            currentFunction.generatedCode.add(String.format("\tLOAD R0, (R7+0%X)", 4 * (currentFunction.stackSize - 1) - variableEntry.stackIndex));
+            currentFunction.generatedCode.add(String.format("\tLOAD R0, (R7+0%X)", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
             currentFunction.generatedCode.add("\tPUSH R0");
             currentFunction.stackSize++;
         }
@@ -730,6 +732,10 @@ public class Rules {
                 String functionName = ((TerminalNode)((NonterminalNode)((NonterminalNode)node.children.get(0)).children.get(0)).children.get(0)).value;
                 currentFunction.generatedCode.add("\tCALL F_" + functionName.toUpperCase());
                 currentFunction.generatedCode.add(String.format("\tADD R7, %s %s, R7", "%D" , tipovi.size() * 4));
+                if(!(funkcija.returnType instanceof VoidType)) {
+                    currentFunction.generatedCode.add("\tPUSH R6");
+                    currentFunction.stackSize++;
+                }
 
                 node.props.put("tip", funkcija.returnType);
                 node.props.put("l-izraz", false);
@@ -886,7 +892,7 @@ public class Rules {
 
         currentFunction.generatedCode.add("\tPOP R1");
         currentFunction.generatedCode.add("\tPOP R0");
-        switch(operator.value){
+        switch(operator.token){
             case "PLUS" -> {
                 currentFunction.generatedCode.add("\tADD R0, R1, R0");
             }

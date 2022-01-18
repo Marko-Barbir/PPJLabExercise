@@ -14,7 +14,7 @@ public class FunctionTable {
 
         public FunctionEntry(FunctionType type) {
             this.type = type;
-            this.stackSize = type.paramTypes.size();
+            this.stackSize = type.paramTypes.size()+1;
             this.generatedCode = new ArrayList<>();
         }
     }
