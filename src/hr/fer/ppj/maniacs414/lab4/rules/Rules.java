@@ -321,7 +321,7 @@ public class Rules {
             List<String> names = (List<String>) node.props.get("imena");
 
             for (int i = 0; i < paramTypes.size(); i++){
-                newVariableTable.variables.put((String)names.get(i), new VariableTable.VariableEntry((Type) paramTypes.get(i), 0));
+                newVariableTable.variables.put((String)names.get(i), new VariableTable.VariableEntry((Type) paramTypes.get(i), i * 4));
             }
         }
 
@@ -633,6 +633,11 @@ public class Rules {
                 error(node);
             }
         }
+
+//        currentFunction.generatedCode.add(String.format("\tLOAD R0, (R7 + 0%X)", 4 * (currentFunction.stackSize - 1) - variableTable.getEntry(IDN.value).stackIndex));
+        currentFunction.generatedCode.add("\tPUSH R0");
+        currentFunction.stackSize++;
+
         node.props.put("tip", variable);
         node.props.put("l-izraz", isNonConstantNumerical(variable));
     }
@@ -646,6 +651,7 @@ public class Rules {
 
         currentFunction.generatedCode.add(String.format("\tMOVE %s %s, R0", "%D", BROJ.value));
         currentFunction.generatedCode.add("\tPUSH R0");
+        currentFunction.stackSize++;
 
         node.props.put("tip", new IntType());
         node.props.put("l-izraz", false);
@@ -717,6 +723,11 @@ public class Rules {
                         error(node);
                     }
                 }
+
+                String functionName = ((TerminalNode)((NonterminalNode)((NonterminalNode)node.children.get(0)).children.get(0)).children.get(0)).value;
+                currentFunction.generatedCode.add("\tCALL F_" + functionName.toUpperCase());
+                currentFunction.generatedCode.add(String.format("\tADD R7, %s %s, R7", "%D" , tipovi.size() * 4));
+
                 node.props.put("tip", funkcija.returnType);
                 node.props.put("l-izraz", false);
             }
@@ -859,6 +870,7 @@ public class Rules {
 
     private static void op_izraz2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
         NonterminalNode op1 = (NonterminalNode) node.children.get(0);
+        TerminalNode operator = (TerminalNode) node.children.get(1);
         NonterminalNode op2 = (NonterminalNode) node.children.get(2);
         check(op1, variableTable, functionTable);
         if(!((Type) op1.props.get("tip")).implicitCastsInto(new IntType())) {
@@ -868,6 +880,18 @@ public class Rules {
         if(!((Type) op2.props.get("tip")).implicitCastsInto(new IntType())) {
             error(node);
         }
+
+        currentFunction.generatedCode.add("\tPOP R1");
+        currentFunction.generatedCode.add("\tPOP R0");
+        switch(operator.value){
+            case "PLUS" -> {
+                currentFunction.generatedCode.add("\tADD R0, R1, R0");
+            }
+        }
+        currentFunction.generatedCode.add("\tPUSH R0");
+        currentFunction.stackSize--;
+
+
         node.addProp("tip", new IntType());
         node.addProp("l-izraz", false);
     }
@@ -1083,6 +1107,17 @@ public class Rules {
         while (variableTable.parentTable != null) {
             if(variableTable.variables.containsKey(idn)) return variableTable.variables.get(idn).type;
             if(functionTable.functions.containsKey(idn)) return functionTable.functions.get(idn).type;
+            variableTable = variableTable.parentTable;
+            functionTable = functionTable.parentTable;
+        }
+        return res;
+    }
+
+    private static Object getEntry(FunctionTable functionTable, VariableTable variableTable, String idn){
+        Type res = null;
+        while (variableTable.parentTable != null) {
+            if(variableTable.variables.containsKey(idn)) return variableTable.variables.get(idn);
+            if(functionTable.functions.containsKey(idn)) return functionTable.functions.get(idn);
             variableTable = variableTable.parentTable;
             functionTable = functionTable.parentTable;
         }

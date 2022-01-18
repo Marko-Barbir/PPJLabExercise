@@ -48,6 +48,7 @@ public class GeneratorKoda {
         for(Map.Entry<String, FunctionTable.FunctionEntry> entry : functionTable.functions.entrySet()) {
             System.out.printf("F_%s%n", entry.getKey().toUpperCase());
             entry.getValue().generatedCode.forEach(System.out::println);
+            System.out.println("\tRET");
             System.out.println();
         }
     }
