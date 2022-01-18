@@ -38,7 +38,6 @@ def main():
                                         timeout=2,
                                         text=True)
         except subprocess.TimeoutExpired:
-            print('Java timeout')
             failed = True
 
         with open(subdirectory + '/a.frisc', 'w') as writer:
@@ -51,7 +50,7 @@ def main():
                                         timeout=2,
                                         text=True)
         except subprocess.TimeoutExpired:
-            print('Simulation timeout')
+            #print('Simulation timeout')
             failed = True
 
         if failed or not simulation.stdout.strip() == out.strip():

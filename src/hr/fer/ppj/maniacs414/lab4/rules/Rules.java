@@ -732,6 +732,8 @@ public class Rules {
                 String functionName = ((TerminalNode)((NonterminalNode)((NonterminalNode)node.children.get(0)).children.get(0)).children.get(0)).value;
                 currentFunction.generatedCode.add("\tCALL F_" + functionName.toUpperCase());
                 currentFunction.generatedCode.add(String.format("\tADD R7, %s %s, R7", "%D" , tipovi.size() * 4));
+                currentFunction.stackSize -= tipovi.size();
+
                 if(!(funkcija.returnType instanceof VoidType)) {
                     currentFunction.generatedCode.add("\tPUSH R6");
                     currentFunction.stackSize++;
