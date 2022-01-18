@@ -11,7 +11,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Rules {
+    public static class MemoryEntry {
+        public String label, value;
+
+        public MemoryEntry(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+    }
+
     private static FunctionTable.FunctionEntry currentFunction = null;
+    public static List<MemoryEntry> memoryEntries= new ArrayList<>();
 
     public static void check(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         if(node.name.equals("slozena_naredba")){
@@ -654,7 +664,25 @@ public class Rules {
             error(node);
         }
 
-        currentFunction.generatedCode.add(String.format("\tMOVE %s %s, R0", "%D", BROJ.value));
+        int numberValue = Integer.parseInt(BROJ.value);
+        boolean canFit = false;
+
+        if((numberValue >> (19) & 1) == 0) {
+            if((numberValue & (0xFFF00000)) == 0) {
+                canFit = true;
+            }
+        } else{
+            if((numberValue & (0xFFF00000)) == 0xFFF00000) {
+                canFit = true;
+            }
+        }
+
+        if(canFit) {
+            currentFunction.generatedCode.add(String.format("\tMOVE %s %s,R0", "%D", BROJ.value));
+        } else {
+            memoryEntries.add(new MemoryEntry("C_" + BROJ.value, "%D " + BROJ.value));
+            currentFunction.generatedCode.add(String.format("\tLOAD R0, (%s)", "C_" + BROJ.value));
+        }
         currentFunction.generatedCode.add("\tPUSH R0");
         currentFunction.stackSize++;
 

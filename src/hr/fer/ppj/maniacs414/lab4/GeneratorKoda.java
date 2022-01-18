@@ -51,6 +51,10 @@ public class GeneratorKoda {
             System.out.println("\tRET");
             System.out.println();
         }
+
+        for (Rules.MemoryEntry entry : Rules.memoryEntries) {
+            System.out.printf("%s DW %s\n", entry.label, entry.value);
+        }
     }
 
     private static void markDefinedFunctions(FunctionTable table, Map<String, Map<FunctionType, Boolean>> allFunctions){
