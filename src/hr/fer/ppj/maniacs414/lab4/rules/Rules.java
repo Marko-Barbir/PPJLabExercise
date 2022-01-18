@@ -1,5 +1,6 @@
 package hr.fer.ppj.maniacs414.lab4.rules;
 
+import hr.fer.ppj.maniacs414.lab4.parser.Node;
 import hr.fer.ppj.maniacs414.lab4.parser.NonterminalNode;
 import hr.fer.ppj.maniacs414.lab4.parser.TerminalNode;
 import hr.fer.ppj.maniacs414.lab4.table.FunctionTable;
@@ -7,21 +8,11 @@ import hr.fer.ppj.maniacs414.lab4.table.VariableTable;
 import hr.fer.ppj.maniacs414.lab4.types.*;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Rules {
-    public static class MemoryEntry {
-        public String label, value;
-
-        public MemoryEntry(String label, String value) {
-            this.label = label;
-            this.value = value;
-        }
-    }
-
     private static FunctionTable.FunctionEntry currentFunction = null;
-    public static List<MemoryEntry> memoryEntries= new ArrayList<>();
+    public static Map<String, String> memoryEntries= new HashMap<>();
 
     public static void check(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         if(node.name.equals("slozena_naredba")){
@@ -570,6 +561,22 @@ public class Rules {
         else{
             error(node);
         }
+
+        TerminalNode IDN = (TerminalNode) (((NonterminalNode) (node.children.get(0))).children.get(0));
+        Node i = node.children.get(2);
+        while (i instanceof NonterminalNode) {
+            NonterminalNode nonterminalNode = (NonterminalNode) i;
+            i = nonterminalNode.children.get(0);
+        }
+        TerminalNode BROJ = (TerminalNode) i;
+
+        if(currentFunction == null) {
+            memoryEntries.put("V_" + IDN.value.toUpperCase(), "%D " + BROJ.value);
+        } else {
+            currentFunction.generatedCode.add("\tPOP R0");
+            currentFunction.generatedCode.add(String.format("\tSTORE R0, (%s)", "V_" + IDN.value.toUpperCase()));
+            currentFunction.stackSize--;
+        }
     }
 
 //    private static void izravni_deklarator1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -646,9 +653,14 @@ public class Rules {
             }
         }
 
-        Object entry = getEntry(functionTable, variableTable, IDN.value);
-        if(entry instanceof VariableTable.VariableEntry variableEntry) {
-            currentFunction.generatedCode.add(String.format("\tLOAD R0, (R7+0%X)", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
+        Pair<Object, Boolean> entry = getEntry(functionTable, variableTable, IDN.value);
+        if(entry.first instanceof VariableTable.VariableEntry) {
+            VariableTable.VariableEntry variableEntry = (VariableTable.VariableEntry) entry.first;
+            if(entry.second) {
+                currentFunction.generatedCode.add("\tLOAD R0, (V_" + IDN.value.toUpperCase() + ")");
+            } else {
+                currentFunction.generatedCode.add(String.format("\tLOAD R0, (R7+0%X)", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
+            }
             currentFunction.generatedCode.add("\tPUSH R0");
             currentFunction.stackSize++;
         }
@@ -664,27 +676,31 @@ public class Rules {
             error(node);
         }
 
-        int numberValue = Integer.parseInt(BROJ.value);
-        boolean canFit = false;
+        if(currentFunction != null) {
+            int numberValue = Integer.parseInt(BROJ.value);
+            boolean canFit = false;
 
-        if((numberValue >> (19) & 1) == 0) {
-            if((numberValue & (0xFFF00000)) == 0) {
-                canFit = true;
+            if((numberValue >> (19) & 1) == 0) {
+                if((numberValue & (0xFFF00000)) == 0) {
+                    canFit = true;
+                }
+            } else{
+                if((numberValue & (0xFFF00000)) == 0xFFF00000) {
+                    canFit = true;
+                }
             }
-        } else{
-            if((numberValue & (0xFFF00000)) == 0xFFF00000) {
-                canFit = true;
-            }
-        }
 
-        if(canFit) {
-            currentFunction.generatedCode.add(String.format("\tMOVE %s %s,R0", "%D", BROJ.value));
+            if(canFit) {
+                currentFunction.generatedCode.add(String.format("\tMOVE %s %s,R0", "%D", BROJ.value));
+            } else {
+                memoryEntries.put("C_" + BROJ.value, "%D " + BROJ.value);
+                currentFunction.generatedCode.add(String.format("\tLOAD R0, (%s)", "C_" + BROJ.value));
+            }
+            currentFunction.generatedCode.add("\tPUSH R0");
+            currentFunction.stackSize++;
         } else {
-            memoryEntries.add(new MemoryEntry("C_" + BROJ.value, "%D " + BROJ.value));
-            currentFunction.generatedCode.add(String.format("\tLOAD R0, (%s)", "C_" + BROJ.value));
+
         }
-        currentFunction.generatedCode.add("\tPUSH R0");
-        currentFunction.stackSize++;
 
         node.props.put("tip", new IntType());
         node.props.put("l-izraz", false);
@@ -1142,24 +1158,32 @@ public class Rules {
     }
 
     private static Type getType(FunctionTable functionTable, VariableTable variableTable, String idn){
-        Type res = null;
-        while (variableTable.parentTable != null) {
+        while (variableTable != null) {
             if(variableTable.variables.containsKey(idn)) return variableTable.variables.get(idn).type;
             if(functionTable.functions.containsKey(idn)) return functionTable.functions.get(idn).type;
             variableTable = variableTable.parentTable;
             functionTable = functionTable.parentTable;
         }
-        return res;
+        return null;
     }
 
-    private static Object getEntry(FunctionTable functionTable, VariableTable variableTable, String idn){
-        Type res = null;
-        while (variableTable.parentTable != null) {
-            if(variableTable.variables.containsKey(idn)) return variableTable.variables.get(idn);
-            if(functionTable.functions.containsKey(idn)) return functionTable.functions.get(idn);
+    private static Pair<Object, Boolean> getEntry(FunctionTable functionTable, VariableTable variableTable, String idn){
+        while (variableTable != null) {
+            if(variableTable.variables.containsKey(idn)) return new Pair<>(variableTable.variables.get(idn), variableTable.parentTable == null);
+            if(functionTable.functions.containsKey(idn)) return new Pair<>(functionTable.functions.get(idn), functionTable.parentTable == null);
             variableTable = variableTable.parentTable;
             functionTable = functionTable.parentTable;
         }
-        return res;
+        return null;
+    }
+
+    private static class Pair<T,U> {
+        public T first;
+        public U second;
+
+        public Pair(T first, U second) {
+            this.first = first;
+            this.second = second;
+        }
     }
 }

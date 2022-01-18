@@ -52,8 +52,8 @@ public class GeneratorKoda {
             System.out.println();
         }
 
-        for (Rules.MemoryEntry entry : Rules.memoryEntries) {
-            System.out.printf("%s DW %s\n", entry.label, entry.value);
+        for (Map.Entry<String, String> entry : Rules.memoryEntries.entrySet()) {
+            System.out.printf("%s DW %s\n", entry.getKey(), entry.getValue());
         }
     }
 
