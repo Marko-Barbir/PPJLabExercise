@@ -634,9 +634,12 @@ public class Rules {
             }
         }
 
-//        currentFunction.generatedCode.add(String.format("\tLOAD R0, (R7 + 0%X)", 4 * (currentFunction.stackSize - 1) - variableTable.getEntry(IDN.value).stackIndex));
-        currentFunction.generatedCode.add("\tPUSH R0");
-        currentFunction.stackSize++;
+        Object entry = getEntry(functionTable, variableTable, IDN.value);
+        if(entry instanceof VariableTable.VariableEntry variableEntry) {
+            currentFunction.generatedCode.add(String.format("\tLOAD R0, (R7+0%X)", 4 * (currentFunction.stackSize - 1) - variableEntry.stackIndex));
+            currentFunction.generatedCode.add("\tPUSH R0");
+            currentFunction.stackSize++;
+        }
 
         node.props.put("tip", variable);
         node.props.put("l-izraz", isNonConstantNumerical(variable));
