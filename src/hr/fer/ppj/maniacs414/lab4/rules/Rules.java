@@ -441,6 +441,8 @@ public class Rules {
         currentFunction.generatedCode.add("\tCMP R0,0");
         currentFunction.generatedCode.add("\tJR_EQ LOOPEND"+x);
         check((NonterminalNode) node.children.get(4), variableTable, functionTable);
+        currentFunction.generatedCode.add("\tPOP R0");
+        currentFunction.stackSize--;
         check((NonterminalNode) node.children.get(6), variableTable, functionTable);
         currentFunction.generatedCode.add("\tJR LOOPSTART"+x);
         currentFunction.generatedCode.add("LOOPEND"+x);
@@ -860,7 +862,7 @@ public class Rules {
                     addFrisc("\tLOAD R0, (R0)");
                 }
                 addFrisc("\tPUSH R0");
-                if(currentFunction != null) currentFunction.stackSize++;
+                if(currentFunction != null) currentFunction.stackSize--;
 
                 node.props.put("tip", arrt.elementType);
                 node.props.put("l-izraz", !isConstantNumerical(arrt.elementType));
