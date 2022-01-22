@@ -48,7 +48,7 @@ public class GeneratorKoda {
                 \tLOAD R0,(R7+8)
                 \tLOAD R1, (R7+4)
                 \tMOVE 0,R6
-                STEPMUL CMP R0,0
+                STEPMUL CMP R1,0
                 \tJR_EQ ENDMUL
                 \tADD R6, R0, R6
                 \tSUB R1,1,R1
