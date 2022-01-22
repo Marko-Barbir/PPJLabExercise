@@ -14,6 +14,9 @@ public class Rules {
     private static FunctionTable.FunctionEntry currentFunction = null;
     public static Map<String, String> memoryEntries= new HashMap<>();
     public static List<String> globalCode = new ArrayList<>();
+    private static int unneg = 0;
+    private static int comp = 0;
+    private static int sc = 0;
 
     public static void check(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         if(node.name.equals("slozena_naredba")){
@@ -660,22 +663,21 @@ public class Rules {
 
             if(entry.second) {
                 if(node.props.containsKey("pointer") || variable instanceof ArrayType){
-                    currentFunction.generatedCode.add("\tMOVE V_" + IDN.value.toUpperCase() + ", R0");
+                    addFrisc("\tMOVE V_" + IDN.value.toUpperCase() + ", R0");
                 } else {
-                    currentFunction.generatedCode.add("\tLOAD R0, (V_" + IDN.value.toUpperCase() + ")");
+                    addFrisc("\tLOAD R0, (V_" + IDN.value.toUpperCase() + ")");
                 }
             } else {
                 if(node.props.containsKey("pointer") || variable instanceof ArrayType){
-                    currentFunction.generatedCode.add(String.format("\tMOVE 0%X, R0", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
-                    currentFunction.generatedCode.add("\tADD R0, R7, R0");
+                    addFrisc(String.format("\tMOVE 0%X, R0", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
+                    addFrisc("\tADD R0, R7, R0");
                 } else {
-                    currentFunction.generatedCode.add(String.format("\tLOAD R0, (R7+0%X)", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
+                    addFrisc(String.format("\tLOAD R0, (R7+0%X)", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
                 }
             }
 
-
-            currentFunction.generatedCode.add("\tPUSH R0");
-            currentFunction.stackSize++;
+            addFrisc("\tPUSH R0");
+            if(currentFunction != null) currentFunction.stackSize++;
         }
 
         node.props.put("tip", variable);
@@ -703,22 +705,13 @@ public class Rules {
         }
 
         if(canFit) {
-            if(currentFunction == null) {
-                globalCode.add(String.format("\tMOVE %s %s,R0", "%D", BROJ.value));
-            } else {
-                currentFunction.generatedCode.add(String.format("\tMOVE %s %s,R0", "%D", BROJ.value));
-            }
-
+            addFrisc(String.format("\tMOVE %s %s,R0", "%D", BROJ.value));
         } else {
             memoryEntries.put("C_" + BROJ.value, "%D " + BROJ.value);
-            if(currentFunction == null) {
-                globalCode.add(String.format("\tLOAD R0, (%s)", "C_" + BROJ.value));
-            } else {
-                currentFunction.generatedCode.add(String.format("\tLOAD R0, (%s)", "C_" + BROJ.value));
-            }
+            addFrisc(String.format("\tLOAD R0, (%s)", "C_" + BROJ.value));
         }
-        currentFunction.generatedCode.add("\tPUSH R0");
-        currentFunction.stackSize++;
+        addFrisc("\tPUSH R0");
+        if(currentFunction != null) currentFunction.stackSize++;
 
 
         node.props.put("tip", new IntType());
@@ -733,14 +726,9 @@ public class Rules {
 
         char c = ZNAK.value.charAt(0);
 
-        if(currentFunction == null) {
-            globalCode.add(String.format("\tMOVE %s %s, R0", "%D", (int)c));
-            globalCode.add("\tPUSH R0");
-        } else {
-            currentFunction.generatedCode.add(String.format("\tMOVE %s %s, R0", "%D", (int)c));
-            currentFunction.generatedCode.add("\tPUSH R0");
-            currentFunction.stackSize++;
-        }
+        addFrisc(String.format("\tMOVE %s %s, R0", "%D", (int)c));
+        addFrisc("\tPUSH R0");
+        if(currentFunction != null) currentFunction.stackSize++;
 
 
         node.props.put("tip", new CharType());
@@ -765,6 +753,9 @@ public class Rules {
         if(node.children.size() == 1) {
             NonterminalNode primarni_izraz = (NonterminalNode) node.children.get(0);
             check(primarni_izraz, variableTable, functionTable);
+            if(node.props.containsKey("pointer")){
+                primarni_izraz.addProp("pointer", true);
+            }
             node.props.put("tip", primarni_izraz.props.get("tip"));
             node.props.put("l-izraz", primarni_izraz.props.get("l-izraz"));
         } else if(node.children.size() == 4) {
@@ -782,6 +773,18 @@ public class Rules {
                 if(!(((Type) izraz.props.get("tip")).implicitCastsInto(new IntType()))) {
                     error(node);
                 }
+
+
+                addFrisc("\tPOP R1");
+                addFrisc("\tSHL R1, 2, R1");
+                addFrisc("\tPOP R0");
+                addFrisc("\tADD R0, R1, R0");
+                if(!node.props.containsKey("pointer")){
+                    addFrisc("\tLOAD R0, (R0)");
+                }
+                addFrisc("\tPUSH R0");
+                if(currentFunction != null) currentFunction.stackSize++;
+
                 node.props.put("tip", arrt.elementType);
                 node.props.put("l-izraz", !isConstantNumerical(arrt.elementType));
             }
@@ -806,13 +809,13 @@ public class Rules {
                 }
 
                 String functionName = ((TerminalNode)((NonterminalNode)((NonterminalNode)node.children.get(0)).children.get(0)).children.get(0)).value;
-                currentFunction.generatedCode.add("\tCALL F_" + functionName.toUpperCase());
-                currentFunction.generatedCode.add(String.format("\tADD R7, %s %s, R7", "%D" , tipovi.size() * 4));
-                currentFunction.stackSize -= tipovi.size();
+                addFrisc("\tCALL F_" + functionName.toUpperCase());
+                addFrisc(String.format("\tADD R7, %s %s, R7", "%D" , tipovi.size() * 4));
+                if(currentFunction != null) currentFunction.stackSize -= tipovi.size();
 
                 if(!(funkcija.returnType instanceof VoidType)) {
-                    currentFunction.generatedCode.add("\tPUSH R6");
-                    currentFunction.stackSize++;
+                    addFrisc("\tPUSH R6");
+                    if(currentFunction != null) currentFunction.stackSize++;
                 }
 
                 node.props.put("tip", funkcija.returnType);
@@ -829,15 +832,37 @@ public class Rules {
             if(!funkcija.equals(new FunctionType(funkcija.returnType, new VoidType()))) {
                 error(node);
             }
+
+            String functionName = ((TerminalNode)((NonterminalNode)((NonterminalNode)node.children.get(0)).children.get(0)).children.get(0)).value;
+            addFrisc("\tCALL F_" + functionName.toUpperCase());
+            if(!(funkcija.returnType instanceof VoidType)) {
+                addFrisc("\tPUSH R6");
+                if(currentFunction != null) currentFunction.stackSize++;
+            }
+
             node.props.put("tip", funkcija.returnType);
             node.props.put("l-izraz", false);
         } else if(node.children.size() == 2) {
             NonterminalNode postfiks_izraz = (NonterminalNode) node.children.get(0);
+            TerminalNode op = (TerminalNode) node.children.get(1);
+
+            postfiks_izraz.addProp("pointer", true);
             check(postfiks_izraz, variableTable, functionTable);
             if(!((boolean) postfiks_izraz.props.get("l-izraz")) ||
                 !((Type) postfiks_izraz.props.get("tip")).implicitCastsInto(new IntType())) {
                 error(node);
             }
+
+            addFrisc("\tPOP R1");
+            addFrisc("\tLOAD R0, (R1)");
+            if(op.token.equals("OP_INC")) {
+                addFrisc("\tADD R0, 1, R4");
+            } else {
+                addFrisc("\tSUB R0, 1, R4");
+            }
+            addFrisc("\tSTORE R4, (R1)");
+            addFrisc("\tPUSH R0");
+
             node.props.put("tip", new IntType());
             node.props.put("l-izraz", false);
         }
@@ -863,6 +888,9 @@ public class Rules {
 
     private static void unarni_izraz1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
         NonterminalNode postfiks_izraz = (NonterminalNode) node.children.get(0);
+        if(node.props.containsKey("pointer")){
+            postfiks_izraz.addProp("pointer", true);
+        }
         check(postfiks_izraz, variableTable, functionTable);
         node.addProp("tip", postfiks_izraz.props.get("tip"));
         node.addProp("l-izraz", postfiks_izraz.props.get("l-izraz"));
@@ -870,22 +898,59 @@ public class Rules {
 
     private static void unarni_izraz2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
         NonterminalNode unarni_izraz = (NonterminalNode) node.children.get(1);
+        TerminalNode op = (TerminalNode) node.children.get(0);
+
+        unarni_izraz.addProp("pointer", true);
         check(unarni_izraz, variableTable, functionTable);
         if(!(((boolean) unarni_izraz.props.get("l-izraz")) ||
                 ((Type) unarni_izraz.props.get("tip")).implicitCastsInto(new IntType()))) {
             error(node);
         }
+
+        addFrisc("\tPOP R1");
+        addFrisc("\tLOAD R0, (R1)");
+        if(op.token.equals("OP_INC")) {
+            addFrisc("\tADD R0, 1, R0");
+        } else {
+            addFrisc("\tSUB R0, 1, R0");
+        }
+        addFrisc("\tSTORE R0, (R1)");
+        addFrisc("\tPUSH R0");
+
         node.addProp("tip", new IntType());
         node.addProp("l-izraz", false);
     }
 
     private static void unarni_izraz3(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
-        NonterminalNode unarni_operator= (NonterminalNode) node.children.get(0);
+        TerminalNode unarni_operator = (TerminalNode) node.children.get(0);
         NonterminalNode cast_izraz = (NonterminalNode) node.children.get(1);
         check(cast_izraz, variableTable, functionTable);
         if(!((Type) cast_izraz.props.get("tip")).implicitCastsInto(new IntType())) {
             error(node);
         }
+
+        addFrisc("\tPOP R0");
+        switch (unarni_operator.token){
+            case "MINUS" -> {
+                addFrisc("\tMOVE 0, R1");
+                addFrisc("\tSUB R1, R0, R0");
+            }
+            case "OP_TILDA" -> {
+                addFrisc("\tMOVE -1, R1");
+                addFrisc("\tXOR R1, R0, R0");
+            }
+            case "OP_NEG" -> {
+                addFrisc("\tCMP R0, 0");
+                addFrisc(String.format("\tJR_EQ UNNEG_%d", unneg));
+                addFrisc("\tMOVE 0, R0");
+                addFrisc(String.format("\tJR_EQ UNNEG_%d", unneg + 1));
+                addFrisc(String.format("UNNEG_%d", unneg++));
+                addFrisc("\tMOVE 1, R0");
+                addFrisc(String.format("UNNEG_%d", unneg++));
+            }
+        }
+        addFrisc("\tPUSH R0");
+
         node.addProp("tip", new IntType());
         node.addProp("l-izraz", false);
     }
@@ -959,24 +1024,126 @@ public class Rules {
         NonterminalNode op1 = (NonterminalNode) node.children.get(0);
         TerminalNode operator = (TerminalNode) node.children.get(1);
         NonterminalNode op2 = (NonterminalNode) node.children.get(2);
+        boolean logicalExp = operator.token.equals("OP_I") || operator.token.equals("OP_ILI");
         check(op1, variableTable, functionTable);
         if(!((Type) op1.props.get("tip")).implicitCastsInto(new IntType())) {
             error(node);
         }
-        check(op2, variableTable, functionTable);
+
+        if(logicalExp){
+            int x = sc++;
+            addFrisc("\tPOP R0");
+            currentFunction.stackSize--;
+            addFrisc("\tCMP R0, 0");
+            addFrisc(String.format("\tJR_%s SC_%d", operator.token.equals("OP_I") ? "EQ" : "NE", x));
+            check(op2, variableTable, functionTable);
+            addFrisc("\tPOP R0");
+            currentFunction.stackSize--;
+            addFrisc("SC_" + x);
+            addFrisc("\tPUSH R0");
+            currentFunction.stackSize++;
+        }
+
         if(!((Type) op2.props.get("tip")).implicitCastsInto(new IntType())) {
             error(node);
         }
 
-        currentFunction.generatedCode.add("\tPOP R1");
-        currentFunction.generatedCode.add("\tPOP R0");
-        switch(operator.token){
-            case "PLUS" -> {
-                currentFunction.generatedCode.add("\tADD R0, R1, R0");
+        if(!logicalExp){
+            check(op2, variableTable, functionTable);
+            addFrisc("\tPOP R1");
+            addFrisc("\tPOP R0");
+            switch(operator.token){
+                case "PLUS" -> {
+                    addFrisc("\tADD R0, R1, R6");
+                }
+                case "MINUS" -> {
+                    addFrisc("\tSUB R0, R1, R6");
+                }
+                case "OP_PUTA" -> {
+                    addFrisc("\tPUSH R0");
+                    addFrisc("\tPUSH R1");
+                    addFrisc("\tCALL MUL");
+                    addFrisc("\tADD R7, 8, R7");
+                }
+                case "OP_DIJELI" -> {
+                    addFrisc("\tPUSH R0");
+                    addFrisc("\tPUSH R1");
+                    addFrisc("\tCALL DIV");
+                    addFrisc("\tADD R7, 8, R7");
+                }
+                case "OP_MOD" -> {
+                    addFrisc("\tPUSH R0");
+                    addFrisc("\tPUSH R1");
+                    addFrisc("\tCALL MOD");
+                    addFrisc("\tADD R7, 8, R7");
+                }
+                case "OP_LT" -> {
+                    addFrisc("\tCMP R0, R1");
+                    addFrisc("\tJR_SLT COMP_" + comp);
+                    addFrisc("\tMOVE 0, R6");
+                    addFrisc("\tJR COMP_" + (comp + 1));
+                    addFrisc("COMP_" + comp++);
+                    addFrisc("\tMOVE 1, R6");
+                    addFrisc("COMP_" + comp++);
+                }
+                case "OP_GT" -> {
+                    addFrisc("\tCMP R0, R1");
+                    addFrisc("\tJR_SGT COMP_" + comp);
+                    addFrisc("\tMOVE 0, R6");
+                    addFrisc("\tJR COMP_" + (comp + 1));
+                    addFrisc("COMP_" + comp++);
+                    addFrisc("\tMOVE 1, R6");
+                    addFrisc("COMP_" + comp++);
+                }
+                case "OP_LTE" -> {
+                    addFrisc("\tCMP R0, R1");
+                    addFrisc("\tJR_SLE COMP_" + comp);
+                    addFrisc("\tMOVE 0, R6");
+                    addFrisc("\tJR COMP_" + (comp + 1));
+                    addFrisc("COMP_" + comp++);
+                    addFrisc("\tMOVE 1, R6");
+                    addFrisc("COMP_" + comp++);
+                }
+                case "OP_GTE" -> {
+                    addFrisc("\tCMP R0, R1");
+                    addFrisc("\tJR_SGE COMP_" + comp);
+                    addFrisc("\tMOVE 0, R6");
+                    addFrisc("\tJR COMP_" + (comp + 1));
+                    addFrisc("COMP_" + comp++);
+                    addFrisc("\tMOVE 1, R6");
+                    addFrisc("COMP_" + comp++);
+                }
+                case "OP_EQ" -> {
+                    addFrisc("\tCMP R0, R1");
+                    addFrisc("\tJR_EQ COMP_" + comp);
+                    addFrisc("\tMOVE 0, R6");
+                    addFrisc("\tJR COMP_" + (comp + 1));
+                    addFrisc("COMP_" + comp++);
+                    addFrisc("\tMOVE 1, R6");
+                    addFrisc("COMP_" + comp++);
+                }
+                case "OP_NEQ" -> {
+                    addFrisc("\tCMP R0, R1");
+                    addFrisc("\tJR_NE COMP_" + comp);
+                    addFrisc("\tMOVE 0, R6");
+                    addFrisc("\tJR COMP_" + (comp + 1));
+                    addFrisc("COMP_" + comp++);
+                    addFrisc("\tMOVE 1, R6");
+                    addFrisc("COMP_" + comp++);
+                }
+                case "OP_BIN_I" -> {
+                    addFrisc("\tAND R0, R1, R6");
+                }
+                case "OP_BIN_XILI" -> {
+                    addFrisc("\tXOR R0, R1, R6");
+                }
+                case "OP_BIN_ILI" -> {
+                    addFrisc("\tOR R0, R1, R6");
+                }
             }
+            addFrisc("\tPUSH R6");
+            if(currentFunction != null) currentFunction.stackSize--;
         }
-        currentFunction.generatedCode.add("\tPUSH R0");
-        currentFunction.stackSize--;
 
 
         node.addProp("tip", new IntType());
@@ -1108,8 +1275,10 @@ public class Rules {
         if (br_elem <= 0 || br_elem > 1024) {
             error(node);
         }
-        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), currentFunction.stackSize * 4 ));
+
         //OVDJE UBACI FRISC KOD, BITNO DA BI STACK INDEX U PROSLOJ LINIJI POKAZIVAO NA PRVI ELEMENT ARRAYA
+
+        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), currentFunction.stackSize * 4 ));
         node.addProp("tip", new ArrayType(ntip));
         node.addProp("br-elem", br_elem);
     }
@@ -1210,6 +1379,14 @@ public class Rules {
             functionTable = functionTable.parentTable;
         }
         return null;
+    }
+
+    private static void addFrisc(String code) {
+        if(currentFunction == null) {
+            globalCode.add(code);
+        } else {
+            currentFunction.generatedCode.add(code);
+        }
     }
 
     private static class Pair<T,U> {
