@@ -43,6 +43,38 @@ public class GeneratorKoda {
                 \tMOVE 40000, R7
                 \tCALL F_MAIN
                 \tHALT
+                
+                MUL
+                \tLOAD R0,(R7+8)
+                \tLOAD R1, (R7+4)
+                \tMOVE 0,R6
+                STEPMUL CMP R0,0
+                \tJR_EQ ENDMUL
+                \tADD R6, R0, R6
+                \tSUB R1,1,R1
+                \tJR STEPMUL
+                ENDMUL
+                \tRET
+                
+                DIV
+                \tLOAD R0,(R7+8)
+                \tLOAD R1, (R7+4)
+                \tMOVE 0,R6
+                STARTDIV SUB R0,R1,R0
+                \tJR_N ENDDIV
+                \tADD R6,1,R6
+                \tJR STARTDIV
+                ENDDIV
+                \tRET
+                
+                MOD
+                \tLOAD R6,(R7+8)
+                \tLOAD R1, (R7+4)
+                STARTMOD SUB R6,R1,R6
+                \tJR_N ENDMOD
+                \tJR STARTMOD
+                ENDMOD ADD R6, R1, R6
+                \tRET
                 """);
 
         for(Map.Entry<String, FunctionTable.FunctionEntry> entry : functionTable.functions.entrySet()) {

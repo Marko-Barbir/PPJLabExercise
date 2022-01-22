@@ -14,6 +14,10 @@ public class Rules {
     private static FunctionTable.FunctionEntry currentFunction = null;
     public static Map<String, String> memoryEntries= new HashMap<>();
     public static List<String> globalCode = new ArrayList<>();
+    private static Stack<Integer> loopStack = new Stack<>();
+    private static int initx = 0;
+    private static int ifx = 0;
+    private static int loopx = 0;
 
     public static void check(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         if(node.name.equals("slozena_naredba")){
@@ -346,44 +350,107 @@ public class Rules {
 
     private static void izraz_naredba1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         node.addProp("tip", new IntType());
+        if(node.props.containsKey("forCond")) {
+            currentFunction.generatedCode.add("\tMOVE 1, R0");
+            currentFunction.generatedCode.add("\tPUSH R0");
+            currentFunction.stackSize--;
+        }
     }
 
     private static void izraz_naredba2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         check((NonterminalNode) node.children.get(0), variableTable, functionTable);
         node.addProp("tip", node.children.get(0).props.get("tip"));
+        if(!node.props.containsKey("forCond")) {
+            currentFunction.generatedCode.add("\tPOP R0");
+            currentFunction.stackSize--;
+        }
     }
     private static void naredba_grananja1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         check((NonterminalNode) node.children.get(2), variableTable, functionTable);
         checkImplicitCast(node, 2, new IntType());
+        currentFunction.generatedCode.add("\tPOP R0");
+        currentFunction.stackSize--;
+        currentFunction.generatedCode.add("\tCMP R0, 0");
+        int x = ifx++;
+        currentFunction.generatedCode.add("\tJR_EQ ENDIF" + x);
         check((NonterminalNode) node.children.get(4), variableTable, functionTable);
+        currentFunction.generatedCode.add("ENDIF"+x);
     }
 
     private static void naredba_grananja2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
-        naredba_grananja1(node, variableTable, functionTable);
+        check((NonterminalNode) node.children.get(2), variableTable, functionTable);
+        checkImplicitCast(node, 2, new IntType());
+        currentFunction.generatedCode.add("\tPOP R0");
+        currentFunction.stackSize--;
+        currentFunction.generatedCode.add("\tCMP R0, 0");
+        int x = ifx++;
+        currentFunction.generatedCode.add("\tJR_EQ ELSE" + x);
+        check((NonterminalNode) node.children.get(4), variableTable, functionTable);
+        currentFunction.generatedCode.add("\tJR ENDIF" + x);
+        currentFunction.generatedCode.add("ELSE" + x);
         check((NonterminalNode) node.children.get(6), variableTable, functionTable);
+        currentFunction.generatedCode.add("ENDIF" + x);
     }
 
     private static void naredba_petlje1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
-        naredba_grananja1(node, variableTable, functionTable);
+        int x = loopx++;
+        currentFunction.generatedCode.add("LOOPSTART"+x);
+        loopStack.push(x);
+        check((NonterminalNode) node.children.get(2), variableTable, functionTable);
+        currentFunction.generatedCode.add("\tPOP R0");
+        currentFunction.stackSize--;
+        currentFunction.generatedCode.add("\tCMP R0, 0");
+        currentFunction.generatedCode.add("\tJR_EQ LOOPEND"+x);
+        checkImplicitCast(node, 2, new IntType());
+        check((NonterminalNode) node.children.get(4), variableTable, functionTable);
+        currentFunction.generatedCode.add("\tJR LOOPSTART"+x);
+        currentFunction.generatedCode.add("LOOPEND"+x);
+        loopStack.pop();
     }
 
     private static void naredba_petlje2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         check((NonterminalNode) node.children.get(2), variableTable, functionTable);
+        int x = loopx++;
+        currentFunction.generatedCode.add("LOOPSTART"+x);
+        loopStack.push(x);
+        node.children.get(3).addProp("forCond", true);
         check((NonterminalNode) node.children.get(3), variableTable, functionTable);
         checkImplicitCast(node, 3, new IntType());
+        currentFunction.generatedCode.add("\tPOP R0");
+        currentFunction.stackSize--;
+        currentFunction.generatedCode.add("\tCMP R0,0");
+        currentFunction.generatedCode.add("\tJR_EQ LOOPEND"+x);
         check((NonterminalNode) node.children.get(5), variableTable, functionTable);
+        currentFunction.generatedCode.add("\tJR LOOPSTART"+x);
+        currentFunction.generatedCode.add("LOOPEND"+x);
     }
 
     private static void naredba_petlje3(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         check((NonterminalNode) node.children.get(2), variableTable, functionTable);
+        int x = loopx++;
+        currentFunction.generatedCode.add("LOOPSTART"+x);
+        loopStack.push(x);
+        node.children.get(3).addProp("forCond", true);
         check((NonterminalNode) node.children.get(3), variableTable, functionTable);
         checkImplicitCast(node, 3, new IntType());
+        currentFunction.generatedCode.add("\tPOP R0");
+        currentFunction.stackSize--;
+        currentFunction.generatedCode.add("\tCMP R0,0");
+        currentFunction.generatedCode.add("\tJR_EQ LOOPEND"+x);
         check((NonterminalNode) node.children.get(4), variableTable, functionTable);
         check((NonterminalNode) node.children.get(6), variableTable, functionTable);
+        currentFunction.generatedCode.add("\tJR LOOPSTART"+x);
+        currentFunction.generatedCode.add("LOOPEND"+x);
     }
 
     private static void naredba_skoka1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         checkIfInside("naredba_petlje", node);
+        int x = loopStack.peek();
+        switch (((TerminalNode)node.children.get(0)).token) {
+            case "KR_CONTINUE" -> currentFunction.generatedCode.add("\t JR LOOPSTART" + x);
+            case "KR_BREAK" -> currentFunction.generatedCode.add("\t JR LOOPEND" + x);
+            default -> error(node);
+        }
     }
 
     private static void naredba_skoka2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -394,6 +461,7 @@ public class Rules {
         check((NonterminalNode) node.children.get(1), variableTable, functionTable);
         checkIfInsideFunctionNonVoid((Type) node.children.get(1).props.get("tip"), node);
         currentFunction.generatedCode.add("\tPOP R6");
+        currentFunction.stackSize--;
     }
 
     private static void prijevodna_jedinica1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -531,12 +599,25 @@ public class Rules {
         if(type.equals(new IntType(true)) || type.equals(new CharType(true)) || type.equals(new ArrayType(new IntType(true))) || type.equals(new ArrayType(new CharType(true)))){
             error(node);
         }
+        addFrisc("\tPOP R0");
+        if(currentFunction != null) currentFunction.stackSize--;
     }
 
     private static void init_deklarator2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         node.children.get(0).addProp("ntip", (Type)node.props.get("ntip"));
         check((NonterminalNode) node.children.get(0), variableTable, functionTable);
+        addFrisc("\tPOP R3");
+        if(currentFunction != null) currentFunction.stackSize--;
         check((NonterminalNode) node.children.get(2), variableTable, functionTable);
+        Object br_elem = node.children.get(2).props.get("br-elem");
+        addFrisc("\tMOVE %D " + (br_elem == null ? 1 : (int)br_elem) + ",R2");
+        addFrisc("INIT" + initx + "\t POP R0");
+        addFrisc("\tSTORE R0, (R3)");
+        addFrisc("\tADD R3, 4 R3");
+        addFrisc("\tSUB R2,1,R2");
+        addFrisc("\tCMP R2, 0");
+        addFrisc("\tJR_NE INIT" + initx);
+        currentFunction.stackSize+=(br_elem == null ? 1 : (int)br_elem);
         Type declType = (Type)node.children.get(0).props.get("tip");
         Type initType = (Type)node.children.get(2).props.get("tip");
         Type intType = new IntType();
@@ -570,14 +651,6 @@ public class Rules {
             i = nonterminalNode.children.get(0);
         }
         TerminalNode BROJ = (TerminalNode) i;
-
-        if(currentFunction == null) {
-            memoryEntries.put("V_" + IDN.value.toUpperCase(), "%D " + BROJ.value);
-        } else {
-            currentFunction.generatedCode.add("\tPOP R0");
-            currentFunction.generatedCode.add(String.format("\tSTORE R0, (%s)", "V_" + IDN.value.toUpperCase()));
-            currentFunction.stackSize--;
-        }
     }
 
 //    private static void izravni_deklarator1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -988,10 +1061,15 @@ public class Rules {
         check(log_ili_izraz, variableTable, functionTable);
         node.addProp("tip", log_ili_izraz.props.get("tip"));
         node.addProp("l-izraz", log_ili_izraz.props.get("l-izraz"));
+        if(currentFunction != null) {
+            currentFunction.generatedCode.add("\tPOP R0");
+            currentFunction.stackSize--;
+        }
     }
 
     private static void izraz_pridruzivanja2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
         NonterminalNode postfiks_izraz = (NonterminalNode) node.children.get(0);
+        postfiks_izraz.addProp("pointer", true);
         NonterminalNode izraz_pridruzivanja = (NonterminalNode) node.children.get(2);
         check(postfiks_izraz, variableTable, functionTable);
         if(!(boolean) postfiks_izraz.props.get("l-izraz")) {
@@ -1001,6 +1079,14 @@ public class Rules {
         if(!((Type) izraz_pridruzivanja.props.get("tip")).implicitCastsInto((Type) postfiks_izraz.props.get("tip"))) {
             error(node);
         }
+
+        addFrisc("\tPOP R0");
+        if(currentFunction != null) currentFunction.stackSize--;
+        addFrisc("\tPOP R1");
+        if(currentFunction != null) currentFunction.stackSize--;
+        addFrisc("\tSTORE R0, (R1)");
+        addFrisc("\tPUSH R0");
+        if(currentFunction != null) currentFunction.stackSize--;
 
         node.addProp("tip", postfiks_izraz.props.get("tip"));
         node.addProp("l-izraz", false);
@@ -1034,8 +1120,8 @@ public class Rules {
     private static void lista_izraza_pridruzivanja2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         NonterminalNode lista_izraza_pridruzivanja = (NonterminalNode) node.children.get(0);
         NonterminalNode izraz_pridruzivanja = (NonterminalNode) node.children.get(2);
-        check(lista_izraza_pridruzivanja, variableTable, functionTable);
         check(izraz_pridruzivanja, variableTable, functionTable);
+        check(lista_izraza_pridruzivanja, variableTable, functionTable);
         List<Type> tipovi = new ArrayList<>((List<Type>) lista_izraza_pridruzivanja.props.get("tipovi"));
         tipovi.add((Type) izraz_pridruzivanja.props.get("tip"));
         node.props.put("tipovi", tipovi);
@@ -1087,6 +1173,16 @@ public class Rules {
         variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(ntip, currentFunction == null ? 0 : currentFunction.stackSize * 4 ));
         //GORE IPAK NE TREBA ++ JER CE SE STACK SIZE INKREMENTIRAT KOD PUSHA
         //OVDJE UBACI FRISC KOD
+        if(currentFunction == null) {
+            memoryEntries.put("V_" + IDN.value.toUpperCase(), "DW 0");
+            globalCode.add("\tMOVE V_" + IDN.value.toUpperCase() + ", R0");
+            globalCode.add("\tPUSH R0");
+        } else {
+            currentFunction.generatedCode.add("\tSUB R7, 4, R7");
+            currentFunction.stackSize++;
+            currentFunction.generatedCode.add("\tPUSH R7");
+            currentFunction.stackSize++;
+        }
         node.addProp("tip", ntip);
     }
 
@@ -1108,8 +1204,18 @@ public class Rules {
         if (br_elem <= 0 || br_elem > 1024) {
             error(node);
         }
-        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), currentFunction.stackSize * 4 ));
         //OVDJE UBACI FRISC KOD, BITNO DA BI STACK INDEX U PROSLOJ LINIJI POKAZIVAO NA PRVI ELEMENT ARRAYA
+        if(currentFunction == null) {
+            memoryEntries.put("V_" + IDN.value.toUpperCase(), "DW 0" + ", 0".repeat(br_elem-1));
+            globalCode.add("\tMOVE V_" + IDN.value.toUpperCase() + ",R0");
+            globalCode.add("\tPUSH R0");
+        } else {
+            currentFunction.generatedCode.add("\tMOVE %D " + BROJ.value + ",R0");
+            currentFunction.generatedCode.add("\tSHL R0, 2, R0");
+            currentFunction.generatedCode.add("\tSUB R7, R0, R7");
+            currentFunction.stackSize+=br_elem;
+        }
+        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), currentFunction.stackSize * 4 ));
         node.addProp("tip", new ArrayType(ntip));
         node.addProp("br-elem", br_elem);
     }
@@ -1210,6 +1316,14 @@ public class Rules {
             functionTable = functionTable.parentTable;
         }
         return null;
+    }
+
+    private static void addFrisc(String code) {
+        if(currentFunction == null) {
+            globalCode.add(code);
+        } else {
+            currentFunction.generatedCode.add(code);
+        }
     }
 
     private static class Pair<T,U> {
