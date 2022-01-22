@@ -49,33 +49,81 @@ public class GeneratorKoda {
                 MUL
                 \tLOAD R0,(R7+8)
                 \tLOAD R1, (R7+4)
-                \tMOVE 0,R6
+                \tPUSH R2
+                \tPUSH R3
+                \tMOVE 0,R3
+                \tMOVE 0,R2
+                \tCMP R0, 0
+                \tJR_NN FPMUL
+                \tADD R2,1,R2
+                \tSUB R3,R0,R0
+                FPMUL CMP R1,0
+                \tJR_NN SPMUL
+                \tADD R2,1,R2
+                \tSUB R3,R1,R1
+                SPMUL MOVE 0,R6
                 STEPMUL CMP R1,0
                 \tJR_EQ ENDMUL
                 \tADD R6, R0, R6
                 \tSUB R1,1,R1
                 \tJR STEPMUL
                 ENDMUL
+                \tCMP R2,1
+                \tJR_NE ENDMULFUNC
+                \tSUB R3,R6,R6
+                ENDMULFUNC
+                \tPOP R3
+                \tPOP R2
                 \tRET
                 
                 DIV
                 \tLOAD R0,(R7+8)
                 \tLOAD R1, (R7+4)
-                \tMOVE 0,R6
+                \tPUSH R2
+                \tPUSH R3
+                \tMOVE 0,R3
+                \tMOVE 0,R2
+                \tCMP R0, 0
+                \tJR_NN FPDIV
+                \tADD R2,1,R2
+                \tSUB R3,R0,R0
+                FPDIV CMP R1,0
+                \tJR_NN SPDIV
+                \tADD R2,1,R2
+                \tSUB R3,R1,R1
+                SPDIV MOVE 0,R6
                 STARTDIV SUB R0,R1,R0
                 \tJR_N ENDDIV
                 \tADD R6,1,R6
                 \tJR STARTDIV
                 ENDDIV
+                \tCMP R2,1
+                \tJR_NE ENDDIVFUNC
+                \tSUB R3,R6,R6
+                ENDDIVFUNC
+                \tPOP R3
+                \tPOP R2
                 \tRET
                 
                 MOD
                 \tLOAD R6,(R7+8)
                 \tLOAD R1, (R7+4)
+                \tPUSH R2
+                \tPUSH R3
+                \tMOVE 0,R3
+                \tCMP R0, 0
+                \tJR_NN FPMOD
+                \tSUB R3,R6,R6
+                FPMOD CMP R1,0
+                \tJR_NN SPMOD
+                \tSUB R3,R1,R1
+                SPMOD
                 STARTMOD SUB R6,R1,R6
                 \tJR_N ENDMOD
                 \tJR STARTMOD
                 ENDMOD ADD R6, R1, R6
+                \tPOP R3
+                \tPOP R2
                 \tRET
                 """);
 
