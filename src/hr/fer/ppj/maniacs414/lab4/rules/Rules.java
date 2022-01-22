@@ -1389,7 +1389,7 @@ public class Rules {
             currentFunction.generatedCode.add("\tPUSH R6");
             currentFunction.stackSize++;
         }
-        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), currentFunction.stackSize * 4 ));
+        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), currentFunction != null ? currentFunction.stackSize * 4 : 0 ));
         node.addProp("tip", new ArrayType(ntip));
         node.addProp("br-elem", br_elem);
     }
