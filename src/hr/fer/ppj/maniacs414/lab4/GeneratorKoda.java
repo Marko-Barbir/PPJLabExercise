@@ -10,7 +10,6 @@ import hr.fer.ppj.maniacs414.lab4.types.IntType;
 import hr.fer.ppj.maniacs414.lab4.types.VoidType;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class GeneratorKoda {
@@ -40,7 +39,10 @@ public class GeneratorKoda {
 
     private static void generateCode(VariableTable variableTable, FunctionTable functionTable) {
         System.out.println("""
-                \tMOVE 40000, R7
+                \tMOVE 40000, R7"""
+                );
+        Rules.globalCode.forEach(System.out::println);
+        System.out.println("""
                 \tCALL F_MAIN
                 \tHALT
                 

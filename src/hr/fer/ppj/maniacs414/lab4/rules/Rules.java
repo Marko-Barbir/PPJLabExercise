@@ -616,11 +616,11 @@ public class Rules {
         addFrisc("\tMOVE %D " + (br_elem == null ? 1 : (int)br_elem) + ",R2");
         addFrisc("INIT" + initx + "\t POP R0");
         addFrisc("\tSTORE R0, (R3)");
-        addFrisc("\tADD R3, 4 R3");
+        addFrisc("\tADD R3, 4, R3");
         addFrisc("\tSUB R2,1,R2");
         addFrisc("\tCMP R2, 0");
-        addFrisc("\tJR_NE INIT" + initx);
-        currentFunction.stackSize+=(br_elem == null ? 1 : (int)br_elem);
+        addFrisc("\tJR_NE INIT" + initx++);
+        if(currentFunction != null ) currentFunction.stackSize+=(br_elem == null ? 1 : (int)br_elem);
         Type declType = (Type)node.children.get(0).props.get("tip");
         Type initType = (Type)node.children.get(2).props.get("tip");
         Type intType = new IntType();
@@ -1111,15 +1111,11 @@ public class Rules {
             addFrisc(String.format("\tJR_%s SC_%d", operator.token.equals("OP_I") ? "EQ" : "NE", x));
             check(op2, variableTable, functionTable);
             addFrisc("\tPOP R0");
-            currentFunction.stackSize--;
             addFrisc("SC_" + x);
             addFrisc("\tPUSH R0");
             currentFunction.stackSize++;
         }
 
-        if(!((Type) op2.props.get("tip")).implicitCastsInto(new IntType())) {
-            error(node);
-        }
 
         if(!logicalExp){
             check(op2, variableTable, functionTable);
@@ -1218,6 +1214,10 @@ public class Rules {
             if(currentFunction != null) currentFunction.stackSize--;
         }
 
+        if(!((Type) op2.props.get("tip")).implicitCastsInto(new IntType())) {
+            error(node);
+        }
+
 
         node.addProp("tip", new IntType());
         node.addProp("l-izraz", false);
@@ -1228,10 +1228,6 @@ public class Rules {
         check(log_ili_izraz, variableTable, functionTable);
         node.addProp("tip", log_ili_izraz.props.get("tip"));
         node.addProp("l-izraz", log_ili_izraz.props.get("l-izraz"));
-        if(currentFunction != null) {
-            currentFunction.generatedCode.add("\tPOP R0");
-            currentFunction.stackSize--;
-        }
     }
 
     private static void izraz_pridruzivanja2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
@@ -1341,12 +1337,10 @@ public class Rules {
         //GORE IPAK NE TREBA ++ JER CE SE STACK SIZE INKREMENTIRAT KOD PUSHA
         //OVDJE UBACI FRISC KOD
         if(currentFunction == null) {
-            memoryEntries.put("V_" + IDN.value.toUpperCase(), "DW 0");
+            memoryEntries.put("V_" + IDN.value.toUpperCase(), "0");
             globalCode.add("\tMOVE V_" + IDN.value.toUpperCase() + ", R0");
             globalCode.add("\tPUSH R0");
         } else {
-            currentFunction.generatedCode.add("\tSUB R7, 4, R7");
-            currentFunction.stackSize++;
             currentFunction.generatedCode.add("\tPUSH R7");
             currentFunction.stackSize++;
         }
@@ -1373,7 +1367,7 @@ public class Rules {
         }
         //OVDJE UBACI FRISC KOD, BITNO DA BI STACK INDEX U PROSLOJ LINIJI POKAZIVAO NA PRVI ELEMENT ARRAYA
         if(currentFunction == null) {
-            memoryEntries.put("V_" + IDN.value.toUpperCase(), "DW 0" + ", 0".repeat(br_elem-1));
+            memoryEntries.put("V_" + IDN.value.toUpperCase(), "0" + ", 0".repeat(br_elem-1));
             globalCode.add("\tMOVE V_" + IDN.value.toUpperCase() + ",R0");
             globalCode.add("\tPUSH R0");
         } else {

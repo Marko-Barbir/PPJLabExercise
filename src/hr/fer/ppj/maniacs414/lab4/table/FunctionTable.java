@@ -1,6 +1,7 @@
 package hr.fer.ppj.maniacs414.lab4.table;
 
 import hr.fer.ppj.maniacs414.lab4.types.FunctionType;
+import hr.fer.ppj.maniacs414.lab4.types.VoidType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ public class FunctionTable {
 
         public FunctionEntry(FunctionType type) {
             this.type = type;
-            this.stackSize = type.paramTypes.size()+1;
+            this.stackSize = type.paramTypes.contains(new VoidType()) ? 1 : type.paramTypes.size()+1;
             this.generatedCode = new ArrayList<>();
         }
     }
