@@ -1001,13 +1001,14 @@ public class Rules {
     }
 
     private static void unarni_izraz3(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
-        TerminalNode unarni_operator = (TerminalNode) node.children.get(0);
+        NonterminalNode unarni_operator_nez = (NonterminalNode) node.children.get(0);
         NonterminalNode cast_izraz = (NonterminalNode) node.children.get(1);
         check(cast_izraz, variableTable, functionTable);
         if(!((Type) cast_izraz.props.get("tip")).implicitCastsInto(new IntType())) {
             error(node);
         }
 
+        TerminalNode unarni_operator = (TerminalNode) unarni_operator_nez.children.get(0);
         addFrisc("\tPOP R0");
         switch (unarni_operator.token){
             case "MINUS" -> {
