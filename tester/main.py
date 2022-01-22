@@ -47,7 +47,7 @@ def main():
             simulation = subprocess.run(['node', simulatordir + '/main.js', subdirectory + '/a.frisc'],
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.DEVNULL,
-                                        timeout=2,
+                                        timeout=3,
                                         text=True)
         except subprocess.TimeoutExpired:
             #print('Simulation timeout')

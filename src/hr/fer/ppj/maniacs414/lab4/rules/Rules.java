@@ -13,6 +13,7 @@ import java.util.*;
 public class Rules {
     private static FunctionTable.FunctionEntry currentFunction = null;
     public static Map<String, String> memoryEntries= new HashMap<>();
+    public static List<String> globalCode = new ArrayList<>();
 
     public static void check(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         if(node.name.equals("slozena_naredba")){
@@ -425,7 +426,7 @@ public class Rules {
         currentFunction = new FunctionTable.FunctionEntry(newFunction);
         functionTable.functions.put(functionName, currentFunction);
         check((NonterminalNode) node.children.get(5), new VariableTable(variableTable), new FunctionTable(functionTable));
-        currentFunction.stackSize--;
+        currentFunction = null;
     }
 
     private static void definicija_funkcije2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -451,7 +452,7 @@ public class Rules {
         node.children.get(5).addProp("tipovi", paramTypes);
         node.children.get(5).addProp("imena", names);
         check((NonterminalNode) node.children.get(5), variableTable, functionTable);
-        currentFunction.stackSize--;
+        currentFunction = null;
     }
 
     private static void lista_parametara1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -656,11 +657,23 @@ public class Rules {
         Pair<Object, Boolean> entry = getEntry(functionTable, variableTable, IDN.value);
         if(entry.first instanceof VariableTable.VariableEntry) {
             VariableTable.VariableEntry variableEntry = (VariableTable.VariableEntry) entry.first;
+
             if(entry.second) {
-                currentFunction.generatedCode.add("\tLOAD R0, (V_" + IDN.value.toUpperCase() + ")");
+                if(node.props.containsKey("pointer") || variable instanceof ArrayType){
+                    currentFunction.generatedCode.add("\tMOVE V_" + IDN.value.toUpperCase() + ", R0");
+                } else {
+                    currentFunction.generatedCode.add("\tLOAD R0, (V_" + IDN.value.toUpperCase() + ")");
+                }
             } else {
-                currentFunction.generatedCode.add(String.format("\tLOAD R0, (R7+0%X)", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
+                if(node.props.containsKey("pointer") || variable instanceof ArrayType){
+                    currentFunction.generatedCode.add(String.format("\tMOVE 0%X, R0", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
+                    currentFunction.generatedCode.add("\tADD R0, R7, R0");
+                } else {
+                    currentFunction.generatedCode.add(String.format("\tLOAD R0, (R7+0%X)", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
+                }
             }
+
+
             currentFunction.generatedCode.add("\tPUSH R0");
             currentFunction.stackSize++;
         }
@@ -676,31 +689,37 @@ public class Rules {
             error(node);
         }
 
-        if(currentFunction != null) {
-            int numberValue = Integer.parseInt(BROJ.value);
-            boolean canFit = false;
+        int numberValue = Integer.parseInt(BROJ.value);
+        boolean canFit = false;
 
-            if((numberValue >> (19) & 1) == 0) {
-                if((numberValue & (0xFFF00000)) == 0) {
-                    canFit = true;
-                }
-            } else{
-                if((numberValue & (0xFFF00000)) == 0xFFF00000) {
-                    canFit = true;
-                }
+        if((numberValue >> (19) & 1) == 0) {
+            if((numberValue & (0xFFF00000)) == 0) {
+                canFit = true;
+            }
+        } else{
+            if((numberValue & (0xFFF00000)) == 0xFFF00000) {
+                canFit = true;
+            }
+        }
+
+        if(canFit) {
+            if(currentFunction == null) {
+                globalCode.add(String.format("\tMOVE %s %s,R0", "%D", BROJ.value));
+            } else {
+                currentFunction.generatedCode.add(String.format("\tMOVE %s %s,R0", "%D", BROJ.value));
             }
 
-            if(canFit) {
-                currentFunction.generatedCode.add(String.format("\tMOVE %s %s,R0", "%D", BROJ.value));
+        } else {
+            memoryEntries.put("C_" + BROJ.value, "%D " + BROJ.value);
+            if(currentFunction == null) {
+                globalCode.add(String.format("\tLOAD R0, (%s)", "C_" + BROJ.value));
             } else {
-                memoryEntries.put("C_" + BROJ.value, "%D " + BROJ.value);
                 currentFunction.generatedCode.add(String.format("\tLOAD R0, (%s)", "C_" + BROJ.value));
             }
-            currentFunction.generatedCode.add("\tPUSH R0");
-            currentFunction.stackSize++;
-        } else {
-
         }
+        currentFunction.generatedCode.add("\tPUSH R0");
+        currentFunction.stackSize++;
+
 
         node.props.put("tip", new IntType());
         node.props.put("l-izraz", false);
@@ -711,6 +730,19 @@ public class Rules {
         if(!isChar(ZNAK.value)) {
             error(node);
         }
+
+        char c = ZNAK.value.charAt(0);
+
+        if(currentFunction == null) {
+            globalCode.add(String.format("\tMOVE %s %s, R0", "%D", (int)c));
+            globalCode.add("\tPUSH R0");
+        } else {
+            currentFunction.generatedCode.add(String.format("\tMOVE %s %s, R0", "%D", (int)c));
+            currentFunction.generatedCode.add("\tPUSH R0");
+            currentFunction.stackSize++;
+        }
+
+
         node.props.put("tip", new CharType());
         node.props.put("l-izraz", false);
     }
@@ -1052,7 +1084,9 @@ public class Rules {
         if(isAlreadyDeclared(IDN.value, variableTable, functionTable)) {
             error(node);
         }
-        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(ntip, 0));
+        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(ntip, currentFunction == null ? 0 : currentFunction.stackSize * 4 ));
+        //GORE IPAK NE TREBA ++ JER CE SE STACK SIZE INKREMENTIRAT KOD PUSHA
+        //OVDJE UBACI FRISC KOD
         node.addProp("tip", ntip);
     }
 
@@ -1074,7 +1108,8 @@ public class Rules {
         if (br_elem <= 0 || br_elem > 1024) {
             error(node);
         }
-        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), 0) );
+        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), currentFunction.stackSize * 4 ));
+        //OVDJE UBACI FRISC KOD, BITNO DA BI STACK INDEX U PROSLOJ LINIJI POKAZIVAO NA PRVI ELEMENT ARRAYA
         node.addProp("tip", new ArrayType(ntip));
         node.addProp("br-elem", br_elem);
     }
