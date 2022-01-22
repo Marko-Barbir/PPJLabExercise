@@ -504,7 +504,7 @@ public class Rules {
         newFunction.isDefined = true;
         currentFunction = new FunctionTable.FunctionEntry(newFunction);
         functionTable.functions.put(functionName, currentFunction);
-        check((NonterminalNode) node.children.get(5), new VariableTable(variableTable), new FunctionTable(functionTable));
+        check((NonterminalNode) node.children.get(5), new VariableTable(variableTable), functionTable);
         currentFunction = null;
     }
 
@@ -1404,6 +1404,8 @@ public class Rules {
         } else {
             functionTable.functions.put(IDN.value, new FunctionTable.FunctionEntry(funkcija));
         }
+        addFrisc("\tPUSH R0");
+        if(currentFunction != null) currentFunction.stackSize++;
         node.addProp("tip", funkcija);
     }
 
@@ -1420,6 +1422,8 @@ public class Rules {
         } else {
             functionTable.functions.put(IDN.value, new FunctionTable.FunctionEntry(funkcija));
         }
+        addFrisc("\tPUSH R0");
+        if(currentFunction != null) currentFunction.stackSize++;
         node.addProp("tip", funkcija);
     }
 

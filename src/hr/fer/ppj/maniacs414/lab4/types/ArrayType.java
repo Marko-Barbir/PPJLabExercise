@@ -1,5 +1,7 @@
 package hr.fer.ppj.maniacs414.lab4.types;
 
+import java.util.Objects;
+
 public class ArrayType implements Type {
     public Type elementType;
     public boolean isDefined;
@@ -50,6 +52,11 @@ public class ArrayType implements Type {
     public boolean equals(Object obj) {
         if(!(obj instanceof ArrayType other)) return false;
         return elementType.equals(other.elementType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(elementType);
     }
 
     @Override

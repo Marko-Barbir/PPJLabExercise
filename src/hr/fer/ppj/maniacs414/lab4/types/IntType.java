@@ -1,5 +1,7 @@
 package hr.fer.ppj.maniacs414.lab4.types;
 
+import java.util.Objects;
+
 public class IntType implements Type {
     public boolean isConst, isDefined;
 
@@ -51,5 +53,10 @@ public class IntType implements Type {
     public boolean equals(Object obj) {
         if(!(obj instanceof IntType other)) return false;
         return this.isConst == other.isConst;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(isConst);
     }
 }
