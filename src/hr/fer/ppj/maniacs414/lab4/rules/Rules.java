@@ -803,7 +803,7 @@ public class Rules {
             error(node);
         }
 
-        char c = ZNAK.value.charAt(0);
+        char c = ZNAK.value.charAt(1);
 
         addFrisc(String.format("\tMOVE %s %s, R0", "%D", (int)c));
         addFrisc("\tPUSH R0");
