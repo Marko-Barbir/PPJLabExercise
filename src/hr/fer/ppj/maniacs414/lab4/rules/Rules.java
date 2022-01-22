@@ -458,6 +458,8 @@ public class Rules {
 
     private static void naredba_skoka2(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         checkIfInsideFunctionVoid(node);
+        currentFunction.generatedCode.add(String.format("\tADD R7, %s %s, R7", "%D",
+                4*(currentFunction.stackSize - (currentFunction.type.paramTypes.contains(new VoidType()) ? 0 : currentFunction.type.paramTypes.size()) - 1)));
     }
 
     private static void naredba_skoka3(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -465,6 +467,8 @@ public class Rules {
         checkIfInsideFunctionNonVoid((Type) node.children.get(1).props.get("tip"), node);
         currentFunction.generatedCode.add("\tPOP R6");
         currentFunction.stackSize--;
+        currentFunction.generatedCode.add(String.format("\tADD R7, %s %s, R7", "%D",
+                4*(currentFunction.stackSize - (currentFunction.type.paramTypes.contains(new VoidType()) ? 0 : currentFunction.type.paramTypes.size()) - 1)));
     }
 
     private static void prijevodna_jedinica1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -825,10 +829,10 @@ public class Rules {
     private static void postfiks_izraz(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
         if(node.children.size() == 1) {
             NonterminalNode primarni_izraz = (NonterminalNode) node.children.get(0);
-            check(primarni_izraz, variableTable, functionTable);
             if(node.props.containsKey("pointer")){
                 primarni_izraz.addProp("pointer", true);
             }
+            check(primarni_izraz, variableTable, functionTable);
             node.props.put("tip", primarni_izraz.props.get("tip"));
             node.props.put("l-izraz", primarni_izraz.props.get("l-izraz"));
         } else if(node.children.size() == 4) {
@@ -1249,7 +1253,7 @@ public class Rules {
         if(currentFunction != null) currentFunction.stackSize--;
         addFrisc("\tSTORE R0, (R1)");
         addFrisc("\tPUSH R0");
-        if(currentFunction != null) currentFunction.stackSize--;
+        if(currentFunction != null) currentFunction.stackSize++;
 
         node.addProp("tip", postfiks_izraz.props.get("tip"));
         node.addProp("l-izraz", false);
