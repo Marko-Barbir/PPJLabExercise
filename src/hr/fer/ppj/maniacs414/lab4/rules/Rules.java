@@ -620,7 +620,7 @@ public class Rules {
         addFrisc("\tSUB R2,1,R2");
         addFrisc("\tCMP R2, 0");
         addFrisc("\tJR_NE INIT" + initx++);
-        if(currentFunction != null ) currentFunction.stackSize+=(br_elem == null ? 1 : (int)br_elem);
+        if(currentFunction != null ) currentFunction.stackSize-=(br_elem == null ? 1 : (int)br_elem);
         Type declType = (Type)node.children.get(0).props.get("tip");
         Type initType = (Type)node.children.get(2).props.get("tip");
         Type intType = new IntType();
@@ -1341,7 +1341,10 @@ public class Rules {
             globalCode.add("\tMOVE V_" + IDN.value.toUpperCase() + ", R0");
             globalCode.add("\tPUSH R0");
         } else {
-            currentFunction.generatedCode.add("\tPUSH R7");
+            currentFunction.generatedCode.add("\tSUB R7,4,R7");
+            currentFunction.stackSize++;
+            currentFunction.generatedCode.add("\tMOVE R7,R6");
+            currentFunction.generatedCode.add("\tPUSH R6");
             currentFunction.stackSize++;
         }
         node.addProp("tip", ntip);
@@ -1375,6 +1378,9 @@ public class Rules {
             currentFunction.generatedCode.add("\tSHL R0, 2, R0");
             currentFunction.generatedCode.add("\tSUB R7, R0, R7");
             currentFunction.stackSize+=br_elem;
+            currentFunction.generatedCode.add("\tMOVE R7,R6");
+            currentFunction.generatedCode.add("\tPUSH R6");
+            currentFunction.stackSize++;
         }
         variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), currentFunction.stackSize * 4 ));
         node.addProp("tip", new ArrayType(ntip));
