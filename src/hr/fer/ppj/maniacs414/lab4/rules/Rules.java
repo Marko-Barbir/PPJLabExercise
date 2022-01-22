@@ -749,7 +749,8 @@ public class Rules {
                     addFrisc("\tLOAD R0, (V_" + IDN.value.toUpperCase() + ")");
                 }
             } else {
-                if(node.props.containsKey("pointer") || variable instanceof ArrayType){
+                if((node.props.containsKey("pointer") || variable instanceof ArrayType)
+                        && (variableEntry.stackIndex >= currentFunction.type.paramTypes.size()*4)){
                     addFrisc(String.format("\tMOVE 0%X, R0", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
                     addFrisc("\tADD R0, R7, R0");
                 } else {
@@ -1387,7 +1388,7 @@ public class Rules {
             currentFunction.generatedCode.add("\tPUSH R6");
             currentFunction.stackSize++;
         }
-        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), currentFunction != null ? currentFunction.stackSize * 4 : 0 ));
+        variableTable.variables.put(IDN.value, new VariableTable.VariableEntry(new ArrayType(ntip), currentFunction != null ? (currentFunction.stackSize-2) * 4 : 0 ));
         node.addProp("tip", new ArrayType(ntip));
         node.addProp("br-elem", br_elem);
     }
