@@ -749,8 +749,8 @@ public class Rules {
                     addFrisc("\tLOAD R0, (V_" + IDN.value.toUpperCase() + ")");
                 }
             } else {
-                if((node.props.containsKey("pointer") || variable instanceof ArrayType)
-                        && (variableEntry.stackIndex >= currentFunction.type.paramTypes.size()*4)){
+                if((node.props.containsKey("pointer") && !(variable instanceof ArrayType)) || ((variable instanceof ArrayType)
+                        && (variableEntry.stackIndex >= currentFunction.type.paramTypes.size()*4))){
                     addFrisc(String.format("\tMOVE 0%X, R0", 4 * (currentFunction.stackSize-1) - variableEntry.stackIndex));
                     addFrisc("\tADD R0, R7, R0");
                 } else {
