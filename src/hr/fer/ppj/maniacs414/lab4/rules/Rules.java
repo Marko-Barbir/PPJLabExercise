@@ -894,10 +894,8 @@ public class Rules {
                 addFrisc(String.format("\tADD R7, %s %s, R7", "%D" , tipovi.size() * 4));
                 if(currentFunction != null) currentFunction.stackSize -= tipovi.size();
 
-                if(!(funkcija.returnType instanceof VoidType)) {
-                    addFrisc("\tPUSH R6");
-                    if(currentFunction != null) currentFunction.stackSize++;
-                }
+                addFrisc("\tPUSH R6");
+                if(currentFunction != null) currentFunction.stackSize++;
 
                 node.props.put("tip", funkcija.returnType);
                 node.props.put("l-izraz", false);
@@ -916,10 +914,8 @@ public class Rules {
 
             String functionName = ((TerminalNode)((NonterminalNode)((NonterminalNode)node.children.get(0)).children.get(0)).children.get(0)).value;
             addFrisc("\tCALL F_" + functionName.toUpperCase());
-            if(!(funkcija.returnType instanceof VoidType)) {
-                addFrisc("\tPUSH R6");
-                if(currentFunction != null) currentFunction.stackSize++;
-            }
+            addFrisc("\tPUSH R6");
+            if(currentFunction != null) currentFunction.stackSize++;
 
             node.props.put("tip", funkcija.returnType);
             node.props.put("l-izraz", false);
