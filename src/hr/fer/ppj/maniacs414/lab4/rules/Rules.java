@@ -462,6 +462,7 @@ public class Rules {
         checkIfInsideFunctionVoid(node);
         currentFunction.generatedCode.add(String.format("\tADD R7, %s %s, R7", "%D",
                 4*(currentFunction.stackSize - (currentFunction.type.paramTypes.contains(new VoidType()) ? 0 : currentFunction.type.paramTypes.size()) - 1)));
+        currentFunction.generatedCode.add("\tRET");
     }
 
     private static void naredba_skoka3(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
@@ -471,6 +472,7 @@ public class Rules {
         currentFunction.stackSize--;
         currentFunction.generatedCode.add(String.format("\tADD R7, %s %s, R7", "%D",
                 4*(currentFunction.stackSize - (currentFunction.type.paramTypes.contains(new VoidType()) ? 0 : currentFunction.type.paramTypes.size()) - 1)));
+        currentFunction.generatedCode.add("\tRET");
     }
 
     private static void prijevodna_jedinica1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
