@@ -50,94 +50,91 @@ public class GeneratorKoda {
     }
 
     private static void generateCode(VariableTable variableTable, FunctionTable functionTable) {
-        System.out.println("""
-                \tMOVE 40000, R7"""
+        System.out.println("\tMOVE 40000, R7"
                 );
         Rules.globalCode.forEach(System.out::println);
-        System.out.println("""
-                \tCALL F_MAIN
-                \tHALT
-                
-                MUL
-                \tLOAD R0,(R7+8)
-                \tLOAD R1, (R7+4)
-                \tPUSH R2
-                \tPUSH R3
-                \tMOVE 0,R3
-                \tMOVE 0,R2
-                \tCMP R0, 0
-                \tJR_NN FPMUL
-                \tADD R2,1,R2
-                \tSUB R3,R0,R0
-                FPMUL CMP R1,0
-                \tJR_NN SPMUL
-                \tADD R2,1,R2
-                \tSUB R3,R1,R1
-                SPMUL MOVE 0,R6
-                STEPMUL CMP R1,0
-                \tJR_EQ ENDMUL
-                \tADD R6, R0, R6
-                \tSUB R1,1,R1
-                \tJR STEPMUL
-                ENDMUL
-                \tCMP R2,1
-                \tJR_NE ENDMULFUNC
-                \tSUB R3,R6,R6
-                ENDMULFUNC
-                \tPOP R3
-                \tPOP R2
-                \tRET
-                
-                DIV
-                \tLOAD R0,(R7+8)
-                \tLOAD R1, (R7+4)
-                \tPUSH R2
-                \tPUSH R3
-                \tMOVE 0,R3
-                \tMOVE 0,R2
-                \tCMP R0, 0
-                \tJR_NN FPDIV
-                \tADD R2,1,R2
-                \tSUB R3,R0,R0
-                FPDIV CMP R1,0
-                \tJR_NN SPDIV
-                \tADD R2,1,R2
-                \tSUB R3,R1,R1
-                SPDIV MOVE 0,R6
-                STARTDIV SUB R0,R1,R0
-                \tJR_N ENDDIV
-                \tADD R6,1,R6
-                \tJR STARTDIV
-                ENDDIV
-                \tCMP R2,1
-                \tJR_NE ENDDIVFUNC
-                \tSUB R3,R6,R6
-                ENDDIVFUNC
-                \tPOP R3
-                \tPOP R2
-                \tRET
-                
-                MOD
-                \tLOAD R6,(R7+8)
-                \tLOAD R1, (R7+4)
-                \tPUSH R2
-                \tPUSH R3
-                \tMOVE 0,R3
-                \tCMP R0, 0
-                \tJR_NN FPMOD
-                \tSUB R3,R6,R6
-                FPMOD CMP R1,0
-                \tJR_NN SPMOD
-                \tSUB R3,R1,R1
-                SPMOD
-                STARTMOD SUB R6,R1,R6
-                \tJR_N ENDMOD
-                \tJR STARTMOD
-                ENDMOD ADD R6, R1, R6
-                \tPOP R3
-                \tPOP R2
-                \tRET
-                """);
+        System.out.println("\tCALL F_MAIN\n" +
+                           "\tHALT\n" +
+                           "\n" +
+                           "MUL\n" +
+                           "\tLOAD R0,(R7+8)\n" +
+                           "\tLOAD R1, (R7+4)\n" +
+                           "\tPUSH R2\n" +
+                           "\tPUSH R3\n" +
+                           "\tMOVE 0,R3\n" +
+                           "\tMOVE 0,R2\n" +
+                           "\tCMP R0, 0\n" +
+                           "\tJR_NN FPMUL\n" +
+                           "\tADD R2,1,R2\n" +
+                           "\tSUB R3,R0,R0\n" +
+                           "FPMUL CMP R1,0\n" +
+                           "\tJR_NN SPMUL\n" +
+                           "\tADD R2,1,R2\n" +
+                           "\tSUB R3,R1,R1\n" +
+                           "SPMUL MOVE 0,R6\n" +
+                           "STEPMUL CMP R1,0\n" +
+                           "\tJR_EQ ENDMUL\n" +
+                           "\tADD R6, R0, R6\n" +
+                           "\tSUB R1,1,R1\n" +
+                           "\tJR STEPMUL\n" +
+                           "ENDMUL\n" +
+                           "\tCMP R2,1\n" +
+                           "\tJR_NE ENDMULFUNC\n" +
+                           "\tSUB R3,R6,R6\n" +
+                           "ENDMULFUNC\n" +
+                           "\tPOP R3\n" +
+                           "\tPOP R2\n" +
+                           "\tRET\n" +
+                           "\n" +
+                           "DIV\n" +
+                           "\tLOAD R0,(R7+8)\n" +
+                           "\tLOAD R1, (R7+4)\n" +
+                           "\tPUSH R2\n" +
+                           "\tPUSH R3\n" +
+                           "\tMOVE 0,R3\n" +
+                           "\tMOVE 0,R2\n" +
+                           "\tCMP R0, 0\n" +
+                           "\tJR_NN FPDIV\n" +
+                           "\tADD R2,1,R2\n" +
+                           "\tSUB R3,R0,R0\n" +
+                           "FPDIV CMP R1,0\n" +
+                           "\tJR_NN SPDIV\n" +
+                           "\tADD R2,1,R2\n" +
+                           "\tSUB R3,R1,R1\n" +
+                           "SPDIV MOVE 0,R6\n" +
+                           "STARTDIV SUB R0,R1,R0\n" +
+                           "\tJR_N ENDDIV\n" +
+                           "\tADD R6,1,R6\n" +
+                           "\tJR STARTDIV\n" +
+                           "ENDDIV\n" +
+                           "\tCMP R2,1\n" +
+                           "\tJR_NE ENDDIVFUNC\n" +
+                           "\tSUB R3,R6,R6\n" +
+                           "ENDDIVFUNC\n" +
+                           "\tPOP R3\n" +
+                           "\tPOP R2\n" +
+                           "\tRET\n" +
+                           "\n" +
+                           "MOD\n" +
+                           "\tLOAD R6,(R7+8)\n" +
+                           "\tLOAD R1, (R7+4)\n" +
+                           "\tPUSH R2\n" +
+                           "\tPUSH R3\n" +
+                           "\tMOVE 0,R3\n" +
+                           "\tCMP R0, 0\n" +
+                           "\tJR_NN FPMOD\n" +
+                           "\tSUB R3,R6,R6\n" +
+                           "FPMOD CMP R1,0\n" +
+                           "\tJR_NN SPMOD\n" +
+                           "\tSUB R3,R1,R1\n" +
+                           "SPMOD\n" +
+                           "STARTMOD SUB R6,R1,R6\n" +
+                           "\tJR_N ENDMOD\n" +
+                           "\tJR STARTMOD\n" +
+                           "ENDMOD ADD R6, R1, R6\n" +
+                           "\tPOP R3\n" +
+                           "\tPOP R2\n" +
+                           "\tRET\n");
 
         for(Map.Entry<String, FunctionTable.FunctionEntry> entry : functionTable.functions.entrySet()) {
             System.out.printf("F_%s%n", entry.getKey().toUpperCase());
