@@ -9,11 +9,23 @@ import hr.fer.ppj.maniacs414.lab4.types.FunctionType;
 import hr.fer.ppj.maniacs414.lab4.types.IntType;
 import hr.fer.ppj.maniacs414.lab4.types.VoidType;
 
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
 public class GeneratorKoda {
     public static void main(String[] args) {
+        PrintStream p;
+        try {
+            p = new PrintStream(new BufferedOutputStream(new FileOutputStream("a.frisc")));
+            System.setOut(p);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return;
+        }
         NonterminalNode root = Parser.parseInput(System.in);
         VariableTable variableTable = new VariableTable(null);
         FunctionTable functionTable = new FunctionTable(null);
@@ -35,6 +47,8 @@ public class GeneratorKoda {
         }
 
         generateCode(variableTable, functionTable);
+        p.flush();
+        p.close();
     }
 
     private static void generateCode(VariableTable variableTable, FunctionTable functionTable) {
