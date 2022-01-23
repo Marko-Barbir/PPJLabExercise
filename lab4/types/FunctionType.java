@@ -43,9 +43,10 @@ public class FunctionType implements Type {
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof FunctionType other)) return false;
+        if(!(obj instanceof FunctionType)) return false;
+        FunctionType other = (FunctionType) obj;
         return this.returnType.equals(other.returnType) &&
-                this.paramTypes.equals(other.paramTypes);
+               this.paramTypes.equals(other.paramTypes);
     }
 
     @Override
