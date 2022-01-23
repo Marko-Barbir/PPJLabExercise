@@ -1119,7 +1119,6 @@ public class Rules {
             addFrisc("\tPOP R0");
             addFrisc("SC_" + x);
             addFrisc("\tPUSH R0");
-            currentFunction.stackSize++;
         }
 
 
