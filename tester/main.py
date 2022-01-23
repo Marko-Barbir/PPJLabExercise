@@ -5,6 +5,7 @@ import subprocess
 def main():
     # root directory of tests folder
     rootdir = 'D:/5_SEMESTAR/PPJ/ppjlab/4-t/1-t'
+    #rootdir = 'D:/5_SEMESTAR/PPJ/ppjlab/lab4_teza'
 
     # root directory of simulator program
     simulatordir = 'D:/5_SEMESTAR/PPJ/ppjlab/frisc_simulator'

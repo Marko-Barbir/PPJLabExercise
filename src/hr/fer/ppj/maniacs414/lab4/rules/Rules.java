@@ -820,6 +820,18 @@ public class Rules {
     private static void primarni_izraz4(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable) {
         TerminalNode NIZ_ZNAKOVA = (TerminalNode) node.children.get(0);
         if(!isValidString(NIZ_ZNAKOVA.value)) error(node);
+
+        String value = NIZ_ZNAKOVA.value;
+        addFrisc("\tMOVE 0, R0");
+        addFrisc("\tPUSH R0");
+        if(currentFunction != null) currentFunction.stackSize++;
+
+        for(int i = value.length() - 2; i >= 1; i--){
+            addFrisc(String.format("\tMOVE %s %d, R0", "%D", (int)value.charAt(i)));
+            addFrisc("\tPUSH R0");
+            if(currentFunction != null) currentFunction.stackSize++;
+        }
+
         node.props.put("tip", new ArrayType(new CharType(true)));
         node.props.put("l-izraz", false);
     }
