@@ -1311,7 +1311,7 @@ public class Rules {
             isString = true;
         }
         if(isString) {
-            int br_elem = ((TerminalNode) i.children.get(0)).value.length() - 2;
+            int br_elem = ((TerminalNode) i.children.get(0)).value.length() - 2 + 1;
             node.addProp("br-elem", br_elem);
             List<Type> tipovi = new ArrayList<>();
             for(int j=0; j<br_elem; j++) {
