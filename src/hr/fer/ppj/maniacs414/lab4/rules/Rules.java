@@ -451,10 +451,16 @@ public class Rules {
     private static void naredba_skoka1(NonterminalNode node, VariableTable variableTable, FunctionTable functionTable){
         checkIfInside("naredba_petlje", node);
         int x = loopStack.peek();
-        switch (((TerminalNode)node.children.get(0)).token) {
-            case "KR_CONTINUE" -> currentFunction.generatedCode.add("\t JR LOOPSTART" + x);
-            case "KR_BREAK" -> currentFunction.generatedCode.add("\t JR LOOPEND" + x);
-            default -> error(node);
+        switch (((TerminalNode) node.children.get(0)).token) {
+            case "KR_CONTINUE":
+                currentFunction.generatedCode.add("\t JR LOOPSTART" + x);
+                break;
+            case "KR_BREAK":
+                currentFunction.generatedCode.add("\t JR LOOPEND" + x);
+                break;
+            default:
+                error(node);
+                break;
         }
     }
 
@@ -1021,16 +1027,16 @@ public class Rules {
 
         TerminalNode unarni_operator = (TerminalNode) unarni_operator_nez.children.get(0);
         addFrisc("\tPOP R0");
-        switch (unarni_operator.token){
-            case "MINUS" -> {
+        switch (unarni_operator.token) {
+            case "MINUS":
                 addFrisc("\tMOVE 0, R1");
                 addFrisc("\tSUB R1, R0, R0");
-            }
-            case "OP_TILDA" -> {
+                break;
+            case "OP_TILDA":
                 addFrisc("\tMOVE -1, R1");
                 addFrisc("\tXOR R1, R0, R0");
-            }
-            case "OP_NEG" -> {
+                break;
+            case "OP_NEG":
                 addFrisc("\tCMP R0, 0");
                 addFrisc(String.format("\tJR_EQ UNNEG_%d", unneg));
                 addFrisc("\tMOVE 0, R0");
@@ -1038,7 +1044,7 @@ public class Rules {
                 addFrisc(String.format("UNNEG_%d", unneg++));
                 addFrisc("\tMOVE 1, R0");
                 addFrisc(String.format("UNNEG_%d", unneg++));
-            }
+                break;
         }
         addFrisc("\tPUSH R0");
 
@@ -1138,32 +1144,32 @@ public class Rules {
             check(op2, variableTable, functionTable);
             addFrisc("\tPOP R1");
             addFrisc("\tPOP R0");
-            switch(operator.token){
-                case "PLUS" -> {
+            switch (operator.token) {
+                case "PLUS":
                     addFrisc("\tADD R0, R1, R6");
-                }
-                case "MINUS" -> {
+                    break;
+                case "MINUS":
                     addFrisc("\tSUB R0, R1, R6");
-                }
-                case "OP_PUTA" -> {
+                    break;
+                case "OP_PUTA":
                     addFrisc("\tPUSH R0");
                     addFrisc("\tPUSH R1");
                     addFrisc("\tCALL MUL");
                     addFrisc("\tADD R7, 8, R7");
-                }
-                case "OP_DIJELI" -> {
+                    break;
+                case "OP_DIJELI":
                     addFrisc("\tPUSH R0");
                     addFrisc("\tPUSH R1");
                     addFrisc("\tCALL DIV");
                     addFrisc("\tADD R7, 8, R7");
-                }
-                case "OP_MOD" -> {
+                    break;
+                case "OP_MOD":
                     addFrisc("\tPUSH R0");
                     addFrisc("\tPUSH R1");
                     addFrisc("\tCALL MOD");
                     addFrisc("\tADD R7, 8, R7");
-                }
-                case "OP_LT" -> {
+                    break;
+                case "OP_LT":
                     addFrisc("\tCMP R0, R1");
                     addFrisc("\tJR_SLT COMP_" + comp);
                     addFrisc("\tMOVE 0, R6");
@@ -1171,8 +1177,8 @@ public class Rules {
                     addFrisc("COMP_" + comp++);
                     addFrisc("\tMOVE 1, R6");
                     addFrisc("COMP_" + comp++);
-                }
-                case "OP_GT" -> {
+                    break;
+                case "OP_GT":
                     addFrisc("\tCMP R0, R1");
                     addFrisc("\tJR_SGT COMP_" + comp);
                     addFrisc("\tMOVE 0, R6");
@@ -1180,8 +1186,8 @@ public class Rules {
                     addFrisc("COMP_" + comp++);
                     addFrisc("\tMOVE 1, R6");
                     addFrisc("COMP_" + comp++);
-                }
-                case "OP_LTE" -> {
+                    break;
+                case "OP_LTE":
                     addFrisc("\tCMP R0, R1");
                     addFrisc("\tJR_SLE COMP_" + comp);
                     addFrisc("\tMOVE 0, R6");
@@ -1189,8 +1195,8 @@ public class Rules {
                     addFrisc("COMP_" + comp++);
                     addFrisc("\tMOVE 1, R6");
                     addFrisc("COMP_" + comp++);
-                }
-                case "OP_GTE" -> {
+                    break;
+                case "OP_GTE":
                     addFrisc("\tCMP R0, R1");
                     addFrisc("\tJR_SGE COMP_" + comp);
                     addFrisc("\tMOVE 0, R6");
@@ -1198,8 +1204,8 @@ public class Rules {
                     addFrisc("COMP_" + comp++);
                     addFrisc("\tMOVE 1, R6");
                     addFrisc("COMP_" + comp++);
-                }
-                case "OP_EQ" -> {
+                    break;
+                case "OP_EQ":
                     addFrisc("\tCMP R0, R1");
                     addFrisc("\tJR_EQ COMP_" + comp);
                     addFrisc("\tMOVE 0, R6");
@@ -1207,8 +1213,8 @@ public class Rules {
                     addFrisc("COMP_" + comp++);
                     addFrisc("\tMOVE 1, R6");
                     addFrisc("COMP_" + comp++);
-                }
-                case "OP_NEQ" -> {
+                    break;
+                case "OP_NEQ":
                     addFrisc("\tCMP R0, R1");
                     addFrisc("\tJR_NE COMP_" + comp);
                     addFrisc("\tMOVE 0, R6");
@@ -1216,16 +1222,16 @@ public class Rules {
                     addFrisc("COMP_" + comp++);
                     addFrisc("\tMOVE 1, R6");
                     addFrisc("COMP_" + comp++);
-                }
-                case "OP_BIN_I" -> {
+                    break;
+                case "OP_BIN_I":
                     addFrisc("\tAND R0, R1, R6");
-                }
-                case "OP_BIN_XILI" -> {
+                    break;
+                case "OP_BIN_XILI":
                     addFrisc("\tXOR R0, R1, R6");
-                }
-                case "OP_BIN_ILI" -> {
+                    break;
+                case "OP_BIN_ILI":
                     addFrisc("\tOR R0, R1, R6");
-                }
+                    break;
             }
             addFrisc("\tPUSH R6");
             if(currentFunction != null) currentFunction.stackSize--;
