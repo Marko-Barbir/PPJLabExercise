@@ -1,5 +1,7 @@
 package hr.fer.ppj.maniacs414.lab4.types;
 
+import java.util.Objects;
+
 public class CharType implements Type {
     public boolean isConst, isDefined;
 
@@ -50,5 +52,10 @@ public class CharType implements Type {
     public boolean equals(Object obj) {
         if(!(obj instanceof CharType other)) return false;
         return other.isConst == this.isConst;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(isConst);
     }
 }
